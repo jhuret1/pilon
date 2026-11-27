@@ -17,6 +17,7 @@ jobs:
       - run: python scripts/check_release.py
       - run: python -m pytest -q
       - run: pilon demo --no-serve
+      - run: pilon demo ecommerce-facets
       - run: python -m build
       - name: Verify wheel contains the demo and viewer
         run: python scripts/check_wheel.py

@@ -1,6 +1,11 @@
 # Contributing
 
-Start with the offline quickstart and tests. Small, reproducible contributions are
+Start with `python -m src.pilon demo ecommerce-facets`. For a commerce issue,
+include a category model, a few fictional signals and the expected affected SKUs.
+Source adapters can yield dictionaries and catalog extractors can yield evidence
+spans through the [Python interface](docs/use-case-ecommerce-filter-discovery.md).
+
+For the ontology workbench, small, reproducible contributions are
 welcome: independent evaluations, retrieval/collision failures, evidence alignment,
 language coverage, alternative adapters and clearer inspection tools.
 

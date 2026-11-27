@@ -1,149 +1,62 @@
 # PILON
 
-**Turn reviews into an inspectable, evidence-linked candidate ontology.**
+Find the filters shoppers ask for and see which products your catalog can substantiate.
 
-PILON is a local research workbench for ontology induction. It extracts assertions
-with exact source spans, retrieves nearby concept definitions, and chooses whether
-to reuse a concept or propose a new one. Values and their provenance stay attached.
+A shopper wants room for their toes. Your running-shoe store already filters by width.
+One standard-width shoe has a wide toe box, while a wide shoe has a tapered one.
+PILON compares customer language, product specifications and current filters, then
+builds a filter preview with a source for each product assignment.
 
-**Research alpha:** a matching quotation proves where words came from, not that an
-interpretation is correct. Generated concepts remain candidates. PILON does not
-claim calibrated precision, recall, production readiness or a fully verified ontology.
+## Try it locally
 
-## Quickstart — no key, no model download
-
-Python 3.11–3.13:
+From the repository root with Python 3.11 or later:
 
 ```sh
-git clone https://github.com/jhuret1/pilon.git
-cd pilon
-python -m venv .venv
-# macOS / Linux
-source .venv/bin/activate
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install -e .
-pilon demo
+python -m src.pilon demo ecommerce-facets
 ```
 
-Open **http://127.0.0.1:8472**. Stop the local server with Ctrl+C.
-The viewer shows concepts, values, complete source reviews, exact character spans,
-decisions, routing proportions, latency and recorded costs. Opening it never calls a model.
+Open **runtime/ecommerce-facets.html**. The example runs offline using the Python
+standard library. Expand **wide** in the Usage section to see the two matching
+products. Expand the citations in Induction to inspect what their listings say.
 
-The bundled example contains **24 fictional product reviews, 12 products, six
-languages, 32 scripted assertions and 12 candidate concepts**. It includes missing
-accessories, broken components, repairs, comparison to an old product, advertisement
-claims, no mention, and an instruction embedded in review text.
+| Stage | What the bundled example shows |
+| --- | --- |
+| Discovery | 34 customer signals mention toe room in September. A competitor review supplies additional vocabulary. |
+| Forecast | At September's rate, the next 30 days would bring 34 signals. Four of six products have an uncontested value in this snapshot. |
+| Induction | Propose **Toe box** with three observed values. Keep one conflicting product and one undocumented product for review. |
+| Usage | Preview **wide** on Pace 01 and Tempo 03. Export the candidate and product IDs for a merchandising decision. |
 
-**The offline demo is a fixture replay:** extraction and decisions are scripted;
-vectors are deterministic hash vectors, not BGE. It checks the software path and
-explains the output format. It is not a model benchmark. Expect zero API calls and
-zero API cost. No accommodation reviews or private experiment data are included.
+All names and counts are synthetic. The forecast estimates signal volume under a constant-rate assumption. The filter's effect on sales would need a storefront experiment.
+
+## Use your own data
+
+Install the CLI with `python -m pip install -e .`. Supply a category model and a
+feed of records. The channel name is yours. Search logs, support chats, feedback
+forms, store reviews, external reviews and product pages fit the same feed.
 
 ```sh
-pilon demo --no-serve             # terminal / CI smoke test
-pilon serve                     # reopen existing results; read-only
-pilon export RUN_ID --output runtime/export.json
+pilon discover --model model.json --signals signals.csv --output candidates.json
 ```
 
-## Real product reviews — optional Amazon import
+Use `--signals -` to stream JSONL from an existing job. Omit `--output` to return
+JSON on stdout. Add `--through discovery` for signals alone, `--horizon-days 60`
+for a different forecast window or `--html preview.html` for local review.
+The usage stage exports a preview for your PIM or search team to approve.
 
-The importer fetches a bounded slice of **Amazon Reviews 2023**, maintained by the
-McAuley Lab. It resolves an immutable dataset revision, streams only the requested
-slice, records hashes and source positions, and excludes reviewer IDs and image URLs.
-No dataset Python code is executed. Review text is unchanged and is **not claimed
-to be anonymized**.
+The built-in detector finds explicit specification labels present in product text
+and referenced in customer language. Existing filter names and configured aliases
+are checked after normalization. Free-form catalog text can use your own extractor
+through the Python interface. [Input contract and integration example](docs/use-case-ecommerce-filter-discovery.md)
 
-```sh
-pilon import-amazon --limit 20 --output data/amazon-home-kitchen.json
-# Reproduce a download with its recorded 40-character revision:
-pilon import-amazon --limit 20 --offset 20 --revision REVISION --output data/amazon-next.json
-```
+## Repository
 
-`--limit` counts **reviews, not products**. A contiguous slice is useful for a smoke
-test; it is not a representative or labeled evaluation dataset. Downloading does
-not invoke any model. Downloaded data remains in ignored `data/`.
+| Location | Use |
+| --- | --- |
+| [Commerce module](src/pilon/facets/) | Discovery stages, CLI adapters and standalone review page |
+| [Runnable example](src/pilon/facets/example/) | Editable category model and synthetic multichannel feed |
+| [Tests](tests/test_facets.py) | Replays, provenance, known filters, forecasts and conflicting sources |
+| [Ontology workbench](docs/ontology-workbench.md) | Earlier induction experiment, local viewer and optional provider adapter |
 
-The source authors do not assign a license to review text and describe the release
-as primarily for research. Amazon texts are therefore **not bundled or relicensed
-under this repository's MIT license**. See the [dataset](https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023)
-and [authors' usage clarification](https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023/discussions/1).
-
-## Real induction — explicitly opt into paid inference
-
-```sh
-python -m pip install -e ".[openrouter]"
-export OPENROUTER_API_KEY="your-key" # PowerShell: $env:OPENROUTER_API_KEY="your-key"
-pilon run data/amazon-home-kitchen.json --provider openrouter --budget 1 --allow-paid
-pilon serve
-```
-
-This sends the selected review text and extracted concept cards to OpenRouter and
-its model providers. The current adapter uses LangExtract with Gemini 2.5 Flash,
-BGE-M3 embeddings through OpenRouter, and the JEV Decisions endpoint for identity
-and family choices. Service/model availability is checked at runtime; it is not
-guaranteed by this release. Embeddings use the configured Parasail / DeepInfra
-preference, with OpenRouter fallback routing enabled.
-
-The USD budget is an **admission limit using conservative reservations**, not a
-provider-enforced billing cap. Known usage costs are recorded separately from
-unconfirmed reservations. Unknown billed outcomes are not automatically retried.
-Only explicit uncharged HTTP 429 responses can retry automatically. Model price
-changes or unavailable endpoints pause the run. No paid test is run in CI.
-
-Repeated identical commands reuse the same run. After interruption, repeat the
-command to resume committed reviews; uncertain API calls require inspection.
-Only one worker process can write a given database. Use a new `--request-key`
-deliberately for a separate experiment and separate budget.
-
-## What runs
-
-```mermaid
-flowchart LR
-    A[Reviews + source IDs] --> B[LangExtract: assertions + exact spans]
-    B --> C[Validate offsets, attributes and subject]
-    C --> D[BGE-M3: concept + definition]
-    D --> E[Top-K + mandatory identity collisions]
-    E --> F[Reuse / new candidate / abstain]
-    F --> G[Existing broad family or pending classification]
-    G --> H[SQLite checkpoints + local viewer + JSON export]
-```
-
-Values do not define identity: `present` and `absent` can belong to one presence
-concept. Absence, breakdown, repair and no mention remain distinct. A new value
-does not automatically create a new concept. Name collisions are held for review;
-exact name-and-definition matches reuse identity without certifying the value.
-The first usable assertion bootstraps a **candidate**, not a validated fact.
-
-See [architecture](docs/architecture.md), [input and output contract](docs/data-contract.md),
-[evaluation](docs/evaluation.md), [French quickstart](docs/quickstart-fr.md),
-[contributing](CONTRIBUTING.md) and [security](SECURITY.md).
-
-## Scope and next work
-
-Included: sequential ontology induction with bounded extraction prefetch, exact
-spans, collision guards, broad product families, checkpointed SQLite storage,
-metered provider calls, optional complete-link consolidation primitives, a local
-viewer and exports. No GPU or Docker is needed for the offline demo.
-
-Not included: automatic production publication, a trained local specialist,
-anisotropic boundary learning, a hypergraph retrieval engine, a hosted service,
-and a statistically validated benchmark. Consolidation functions are a Python API;
-the initial CLI does not run a paid consolidation campaign. Broad families are
-seeded; new-family suggestions remain pending. Product prompts/families are the
-reference domain, not a claim of plug-and-play performance in every domain.
-
-## Development
-
-```sh
-python -m pip install -e ".[dev]"
-python -m pytest
-python -m ruff check src tests
-python -m build
-```
-
-CI runs on Linux and Windows. Tests mock provider calls, exercise a complete offline
-run, verify resume/cache/budget behavior, inspect exact evidence, and check the Amazon
-normalizer. Live API accuracy needs separate held-out labels and an explicit budget.
-
-Code and original synthetic fixtures: MIT. Dependencies and third-party datasets
-retain their own terms. This repository contains no private source history.
+For contributions, start with a small feed that reproduces a missed filter or an
+incorrect assignment. Include the expected result and the passage supporting it.
+[Contributing](CONTRIBUTING.md) · [License](LICENSE)

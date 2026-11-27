@@ -1,0 +1,10 @@
+{
+  "category": "running-shoes",
+  "window_start": "2026-09-01",
+  "window_end": "2026-09-30",
+  "existing_facets": ["width", "terrain", "size"],
+  "aliases": {
+    "toe box": ["room for my toes", "room for toes", "avant-pied"],
+    "width": ["shoe width"]
+  }
+}

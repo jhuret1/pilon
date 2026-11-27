@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pilon-ontology"
 version = "0.1.0a1"
-description = "Evidence-linked ontology induction from reviews: a local research workbench"
+description = "Discover missing catalog filters from customer signals and product evidence"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -28,7 +28,7 @@ pilon = "pilon.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-pilon = ["data/*.json", "web/*.html", "web/*.css", "web/*.js"]
+pilon = ["data/*.json", "facets/example/*.json", "facets/example/*.jsonl", "web/*.html", "web/*.css", "web/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

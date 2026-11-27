@@ -2,13 +2,20 @@ import argparse
 import json
 from pathlib import Path
 from . import __version__
+from .facets import commands as facets
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='PILON · evidence-linked ontology induction (research alpha)')
+    parser = argparse.ArgumentParser(description='PILON · knowledge discovery from customer signals and catalog evidence')
     parser.add_argument('--version', action='version', version=__version__)
     sub = parser.add_subparsers(dest='command', required=True)
     demo = sub.add_parser('demo', help='Replay synthetic fixtures offline; no model or API key')
+    demo.add_argument('example', nargs='?', choices=['ecommerce-facets'])
+    facets.arguments(demo)
+    discover = sub.add_parser('discover', help='Find potential catalog filters from feedback and product specifications')
+    discover.add_argument('--model', type=Path, required=True)
+    discover.add_argument('--signals', required=True, help='JSONL or CSV file, or - for JSONL on stdin')
+    facets.arguments(discover)
     demo.add_argument('--no-serve', action='store_true')
     run = sub.add_parser('run', help='Run paid induction only with explicit opt-in')
     run.add_argument('input', type=Path)
@@ -32,7 +39,9 @@ def main(argv=None):
         p.add_argument('--port', type=int, default=8472)
     args = parser.parse_args(argv)
     try:
-        if args.command == 'import-amazon':
+        if args.command == 'discover' or (args.command == 'demo' and args.example == 'ecommerce-facets'):
+            facets.execute(args, demo=args.command == 'demo')
+        elif args.command == 'import-amazon':
             from .amazon import download
             from .corpus import rows
             result = download(args.output, limit=args.limit, offset=args.offset, category=args.category, revision=args.revision)

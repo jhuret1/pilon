@@ -1,0 +1,14 @@
+{"id":"q1","role":"demand","source":"site_search","category":"running-shoes","date":"2026-09-18","count":22,"text":"wide toe box running shoes"}
+{"id":"q2","role":"demand","source":"site_search","category":"running-shoes","date":"2026-09-23","count":9,"text":"room for toes"}
+{"id":"c1","role":"demand","source":"support_chat","category":"running-shoes","date":"2026-09-24","text":"Standard width fits me. Which pair gives me room for my toes?"}
+{"id":"r1","role":"demand","source":"store_review","category":"running-shoes","date":"2026-09-12","text":"I wish I could filter by toe box."}
+{"id":"f1","role":"demand","source":"feedback_form","category":"running-shoes","date":"2026-09-27","text":"Je cherche un avant-pied large."}
+{"id":"x1","role":"external","source":"competitor_review","category":"running-shoes","text":"I switched brands to find a wider toe box."}
+{"id":"q3","role":"demand","source":"site_search","category":"running-shoes","date":"2026-09-29","count":15,"text":"shoe width 2E"}
+{"id":"p1","role":"catalog","source":"product_page","category":"running-shoes","product_id":"Pace 01","text":"Road trainer\nWidth: standard\nToe box: wide"}
+{"id":"p2","role":"catalog","source":"merchant_feed","category":"running-shoes","product_id":"Ridge 02","text":"Width: wide\nToe box: tapered"}
+{"id":"p3","role":"catalog","source":"merchant_feed","category":"running-shoes","product_id":"Tempo 03","text":"Width: wide\nToe box: wide"}
+{"id":"p4","role":"catalog","source":"product_page","category":"running-shoes","product_id":"Drift 04","text":"Width: standard\nToe box: standard"}
+{"id":"p5","role":"catalog","source":"product_page","category":"running-shoes","product_id":"Cloud 05","text":"Lightweight mesh.\nWidth: standard"}
+{"id":"p6","role":"catalog","source":"product_page","category":"running-shoes","product_id":"Peak 06","text":"Toe box: wide"}
+{"id":"p7","role":"catalog","source":"merchant_feed","category":"running-shoes","product_id":"Peak 06","text":"Toe box: tapered"}

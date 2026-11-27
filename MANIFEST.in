@@ -3,4 +3,5 @@ recursive-include docs *.md
 recursive-include docs *.txt
 recursive-include scripts *.py
 recursive-include src/pilon/data *.json
+recursive-include src/pilon/facets/example *.json *.jsonl
 recursive-include src/pilon/web *.html *.css *.js
