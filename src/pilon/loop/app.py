@@ -6,7 +6,7 @@ from .benchmark_ui import render_benchmark
 from .worker import report
 
 
-def create_app(queue):
+def create_app(queue, *, display_translations=None):
     def app(environ,start_response):
         path=environ.get('PATH_INFO','/')
         host=environ.get('HTTP_HOST','').partition(':')[0].lower()
@@ -34,7 +34,8 @@ def create_app(queue):
                 payload=queue.get(jid)['payload'] if jid else {}
                 checkpoint=queue.checkpoint(jid,'benchmark') if jid else None
                 mime='text/html; charset=utf-8';body=render_benchmark(snapshot,records=payload.get('records'),
-                    benchmark=checkpoint['data'] if checkpoint else None).encode()
+                    benchmark=checkpoint['data'] if checkpoint else None,
+                    display_translations=display_translations).encode()
             else:
                 status='404 Not Found'
         except ValueError:
@@ -49,7 +50,7 @@ def create_app(queue):
     return app
 
 
-def serve(queue,port=8473):
-    with make_server('127.0.0.1',port,create_app(queue)) as server:
+def serve(queue,port=8473, *, display_translations=None):
+    with make_server('127.0.0.1',port,create_app(queue, display_translations=display_translations)) as server:
         print(f'PILON background cockpit: http://127.0.0.1:{server.server_port}/',flush=True)
         server.serve_forever()

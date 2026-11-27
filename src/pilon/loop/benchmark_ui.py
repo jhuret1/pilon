@@ -6,10 +6,11 @@ import json
 
 from .benchmark import _identifier
 from .recommendations import build_recommendations
+from .presentation import apply_display_translations
 from .report import _entries, _mapping
 
 
-def build_view(report, *, records=None, benchmark=None):
+def build_view(report, *, records=None, benchmark=None, display_translations=None):
     """Build a demand-only view; never substitute projected/product evidence for demand."""
     report = _mapping(report)
     model = deepcopy(_mapping(report.get('model')))
@@ -73,7 +74,7 @@ def build_view(report, *, records=None, benchmark=None):
     product_view = (build_recommendations(model, demands, candidates, represented)
                     if _mapping(bp.get('analysis')).get('method') == 'agent_semantic_review'
                     and _mapping(bp.get('analysis')).get('status') == 'reviewed' else None)
-    return dict(id=report.get('id'), status=report.get('status', 'empty'), ready=ready,
+    view = dict(id=report.get('id'), status=report.get('status', 'empty'), ready=ready,
                 product_view=product_view,
                 synthetic=bool(report.get('synthetic')), model=model, attributes=facets, candidates=candidates,
                 demands=demands, already_represented=represented, channels=channels, jobs=deepcopy(report.get('jobs', [])),
@@ -83,10 +84,11 @@ def build_view(report, *, records=None, benchmark=None):
                              demand_records=len(demands), opportunity_count=len(candidates),
                              schema_gaps=gaps['schema_gap'], inventory_products=inventory,
                              gaps=dict(gaps), attributes=len(facets)))
+    return apply_display_translations(view, display_translations)
 
 
-def render_benchmark(report, *, records=None, benchmark=None):
-    data = build_view(report, records=records, benchmark=benchmark)
+def render_benchmark(report, *, records=None, benchmark=None, display_translations=None):
+    data = build_view(report, records=records, benchmark=benchmark, display_translations=display_translations)
     if data['model'].get('assessment_scope') == 'schema_only' and data['attributes'] == data['model'].get('facets'):
         # Thousands of observed value sets belong to the frozen model. Serialize
         # them once; the local UI uses that same snapshot for browsing and export.

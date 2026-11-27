@@ -52,3 +52,22 @@ def test_benchmark_workspace_uses_frozen_inputs_and_keeps_full_report_separate(t
     assert full['status']=='200 OK'
     assert 'id="extract"' in full['body'].decode()
     assert q.get(jid)==before
+
+
+def test_display_translation_does_not_change_the_raw_report_or_job(tmp_path):
+    q=Queue(tmp_path/'q.sqlite')
+    model,records=inputs()
+    jid=q.enqueue(model,records,synthetic=True)
+    run_once(q,job_id=jid)
+    original=q.get(jid)
+    app=create_app(q)
+    before=get(app,'/api/jobs/'+jid)['body']
+    generated=original['result']['candidates'][0]['label']
+    localized=create_app(q,display_translations={generated:'English display label'})
+    html=get(localized,'/jobs/'+jid)['body'].decode()
+    raw=html.split('<script type="application/json" id="benchmark-data">',1)[1].split('</script>',1)[0]
+    data=json.loads(raw)
+    assert any(c['label']=='English display label' for c in data['candidates'])
+    assert data['model']==model
+    assert get(localized,'/api/jobs/'+jid)['body']==before
+    assert q.get(jid)==original

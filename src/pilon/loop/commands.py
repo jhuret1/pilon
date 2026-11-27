@@ -44,6 +44,8 @@ def configure(parser):
     view.add_argument('job_id');view.add_argument('--html',type=Path);view.add_argument('--output',type=Path)
     serve=sub.add_parser('serve',help='Read-only cockpit; does not start jobs or publish models')
     serve.add_argument('--port',type=int,default=8473)
+    serve.add_argument('--display-translations',type=Path,
+                       help='Optional local English translations for generated analysis; evidence stays unchanged')
     retry=sub.add_parser('retry',help='Explicitly retry a failed job from its checkpoints')
     retry.add_argument('job_id')
     publish=sub.add_parser('publish',help='Explicitly publish a projection to a local model store')
@@ -153,7 +155,9 @@ def execute(args):
         from .app import serve
         if not 0<=args.port<=65535:
             raise ValueError('Invalid port')
-        serve(queue,args.port)
+        from .presentation import load_display_translations
+        translations = load_display_translations(args.display_translations) if args.display_translations else None
+        serve(queue,args.port,display_translations=translations)
     elif command=='retry':
         queue.retry(args.job_id);_emit(dict(job_id=args.job_id,status='queued'))
     elif command in ('publish','rollback'):

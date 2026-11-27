@@ -26,6 +26,14 @@ The `product_view` is a deterministic projection, not a new inference pass. Grou
 
 ## Design system
 
+The interface and generated analysis use English. Imported source text, exact quotations, identifiers, and catalog values retain their original spelling and language. For historical analyses generated in another language, a local display dictionary can be supplied without rerunning inference or changing stored decisions:
+
+```sh
+pilon loop serve --display-translations runtime/analysis-en.json
+```
+
+The JSON format is `{"language":"en","strings":{"Couleur":"Colour"}}`. It translates generated labels, values and reasoning after grouping; it never translates evidence or the frozen catalog. Missing entries retain their original wording. Model exports and the raw report API remain unchanged. This option does not call a translation service.
+
 The self-contained assets in `src/pilon/loop/ui/` define the reusable visual system. No external font, charting library, CDN, or model request is required.
 
 | Element | Contract |

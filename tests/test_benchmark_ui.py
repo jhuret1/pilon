@@ -282,6 +282,7 @@ def test_render_is_benchmark_only_and_embeds_the_actual_snapshot(demo):
     markup = render_benchmark(report, records=records, benchmark=bp)
     page = Page(markup)
     assert page.title == "PILON Benchmark"
+    assert next(attrs for tag, attrs in page.tags if tag == "html")["lang"] == "en"
     assert page.data() == build_view(report, records=records, benchmark=bp)
     ids = [attrs["id"] for _, attrs in page.tags if "id" in attrs]
     assert len(ids) == len(set(ids))
@@ -447,30 +448,33 @@ const {chromium}=require('playwright'), assert=require('node:assert/strict');
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('**/*',route=>{requests.push(route.request().url());return route.abort();});
     await page.goto('about:blank#overview');await page.setContent(html);
+    assert.equal(await page.locator('html').getAttribute('lang'),'en');
+    assert.equal(await page.locator('.skip').innerText(),'Skip to content');
+    assert.equal(await page.locator('#close-inspector').getAttribute('aria-label'),'Close details');
     const semantic=await page.locator('#benchmark-data').evaluate(el=>JSON.parse(el.textContent).analysis?.method==='agent_semantic_review');
-    assert.match(await page.locator('#snapshot-state').innerText(),semantic?/Revue sémantique fournie/:/analyse sémantique non effectuée/);
-    if(semantic)assert.doesNotMatch(await page.locator('#scope-notice').innerText(),/Détection lexicale/);
-    assert.match(await page.locator('.metrics').innerText(),/Requêtes du corpus[\s\S]*Requêtes non interprétées/);
+    assert.match(await page.locator('#snapshot-state').innerText(),semantic?/Supplied semantic review/:/semantic analysis not performed/);
+    if(semantic)assert.doesNotMatch(await page.locator('#scope-notice').innerText(),/Lexical detection/);
+    assert.match(await page.locator('.metrics').innerText(),/Corpus queries[\s\S]*Uninterpreted queries/);
     assert.equal(await page.locator('.coverage-col').count(),0);
-    assert.doesNotMatch(await page.locator('#content').innerText(),/événements|produits dans le périmètre|Couverture incomplète/);
+    assert.doesNotMatch(await page.locator('#content').innerText(),/events|products in scope|Incomplete coverage/);
     await page.locator('#navigation a[href="#opportunities"]').click();
     await page.locator('.filter-tabs').waitFor();
     assert.match(await page.locator('.opportunity-table').innerText(),/Something unfamiliar for my home/);
-    assert.match(await page.locator('.opportunity-table').innerText(),/Valeur non observée · à confirmer/);
+    assert.match(await page.locator('.opportunity-table').innerText(),/Unobserved value · needs confirmation/);
     if(semantic){
       await page.locator('[data-candidate="filter-test"]').first().click();
-      assert.match(await page.locator('#inspector-content').innerText(),/disponibilité du filtre dans le service réel est inconnue/);
+      assert.match(await page.locator('#inspector-content').innerText(),/Filter availability in the live service is unknown/);
       await page.locator('#close-inspector').click();
     }
     await page.locator('#navigation a[href="#demands"]').click();
     await page.locator('.demand-table').waitFor();
     assert.equal(await page.locator('.date-col').count(),0);
     assert.match(await page.locator('.demand-table').innerText(),/extra constraint/);
-    assert.match(await page.locator('.demand-table').innerText(),semantic?/rapprochement proposé par la revue/:/correspondance lexicale candidate/);
+    assert.match(await page.locator('.demand-table').innerText(),semantic?/review-proposed match/:/candidate lexical match/);
     if(semantic){
       await page.locator('[data-demand="q0"]').click();
       assert.match(await page.locator('#inspector-content').innerText(),/Proposed rationale/);
-      assert.match(await page.locator('#inspector-content').innerText(),/Valeur du modèle : shade 000/);
+      assert.match(await page.locator('#inspector-content').innerText(),/Model value: shade 000/);
       await page.locator('#close-inspector').click();
     }
     await page.locator('#category-filter').selectOption('Seating queries');
@@ -478,7 +482,7 @@ const {chromium}=require('playwright'), assert=require('node:assert/strict');
     await page.locator('#navigation a[href="#model"]').click();
     await page.locator('.attribute-table').waitFor();
     assert.equal(await page.locator('.attribute-table tbody tr').count(),25);
-    await page.getByRole('button',{name:'Page suivante',exact:true}).click();
+    await page.getByRole('button',{name:'Next page',exact:true}).click();
     assert.equal(await page.locator('.attribute-table tbody tr').count(),25);
     await page.locator('#search').fill('shade 059');
     assert.equal(await page.locator('.attribute-table tbody tr').count(),1);
@@ -488,7 +492,7 @@ const {chromium}=require('playwright'), assert=require('node:assert/strict');
     assert.equal((await page.locator('.value-table tbody tr').first().innerText()).includes('Desks'),false);
     await page.locator('.scope-details summary').first().click();
     assert.match(await page.locator('.value-table tbody tr').first().innerText(),/Desks/);
-    await page.getByRole('button',{name:'Valeurs suivantes',exact:true}).click();
+    await page.getByRole('button',{name:'Next values',exact:true}).click();
     assert.match(await page.locator('.value-table tbody tr').first().innerText(),/shade 025/);
     await page.locator('#value-search').fill('shade 059');
     assert.equal(await page.locator('.value-table tbody tr').count(),1);
