@@ -8,6 +8,8 @@
   const n = v => v == null ? '—' : new Intl.NumberFormat('fr-FR').format(v);
   const schemaOnly = D.model.assessment_scope === 'schema_only';
   const semanticReview = schemaOnly && D.analysis?.method === 'agent_semantic_review' && D.analysis?.status === 'reviewed';
+  const P = D.product_view;
+  const productMode = semanticReview && !!P;
   const analysisLabel = semanticReview ? 'Revue sémantique fournie' : 'Détecteur local lexical';
   const matchLabel = semanticReview ? 'rapprochement proposé par la revue' : 'correspondance lexicale candidate';
   const unknownPeriod = D.model.observation_period === 'unknown';
@@ -71,11 +73,19 @@
     pages.sources[1] = 'Provenance du corpus de requêtes échantillonnées.';
     pages.runs = ['Exécutions','Résultats enregistrés pour cet aperçu en lecture seule.','history'];
   }
+  if(productMode){
+    pages.overview = ['Synthèse','Les prochaines améliorations de votre catalogue.','overview'];
+    pages.opportunities = ['Recommandations','Quels filtres proposer, quels besoins explorer.','opportunities'];
+    pages.demands = ['Demandes clients','Les recherches à l’origine des recommandations.','demands'];
+    pages.model = ['Modèle du catalogue','Les attributs et valeurs disponibles.','model'];
+  }
   let page = 'overview', query = '', gapFilter = 'all', sourceFilter = 'all', categoryFilter = 'all', sort = 'volume', pageIndex = 0;
+  let recommendationMode = 'filters';
   let activeCandidate = null, detailTab = 'diagnostic', lastFocus = null;
   let activeFacet = null, valueQuery = '', valueCategory = 'all', valuePageIndex = 0;
   const PAGE_SIZE = 25;
   const ready = D.ready;
+  const productItemById = new Map(productMode?[...P.filters,...P.explore,...P.uncertain].map(item=>[item.id,item]):[]);
   const candidates = D.candidates.filter(c => !schemaOnly || !['coverage_gap','retrieval_gap'].includes(c.gap_type));
   const candidateByKey = new Map(candidates.map(c => [c.key,c]));
   const demandById = new Map(D.demands.map(r => [r.id,r]));
@@ -97,9 +107,9 @@
   const representedCount = D.demands.filter(r => representedMatches(r).length).length;
   const uninterpretedCount = D.demands.filter(r => r.matches.some(p=>candidateByKey.get(p.candidate_key)?.gap_type==='unresolved_intent') || (!r.matches.length&&!representedMatches(r).length)).length;
   const reviewLabel = schemaOnly ? 'éléments à examiner' : 'opportunités';
-  const stateLabel = D.status === 'failed' ? 'Échec' : ready ? (schemaOnly?(semanticReview?`Revue sémantique fournie · ${n(D.analysis.reviewed_records)} requêtes revues`:'Données importées · analyse sémantique non effectuée'):'Benchmark disponible') : D.status === 'empty' ? 'Aucune exécution' : 'En attente de résultat';
+  const stateLabel = D.status === 'failed' ? 'Échec' : productMode ? `${n(D.analysis.reviewed_records)} demandes analysées` : ready ? (schemaOnly?(semanticReview?`Revue sémantique fournie · ${n(D.analysis.reviewed_records)} requêtes revues`:'Données importées · analyse sémantique non effectuée'):'Benchmark disponible') : D.status === 'empty' ? 'Aucune exécution' : 'En attente de résultat';
   const statusClass = D.status === 'failed' ? 'failed' : ready && !schemaOnly ? 'complete' : '';
-  $('#navigation').innerHTML = Object.entries(pages).filter(([k]) => k !== 'runs').map(([key,[label,,ico]],i) => `${i===3?'<div class="nav-separator"></div>':''}<a href="#${key}" title="${label}">${icon(ico)}<span class="nav-text">${label}</span>${key==='opportunities'?`<span class="nav-count">${n(candidates.length)}</span>`:''}</a>`).join('');
+  $('#navigation').innerHTML = Object.entries(pages).filter(([k]) => k !== 'runs').map(([key,[label,,ico]],i) => `${i===3?'<div class="nav-separator"></div>':''}<a href="#${key}" title="${label}">${icon(ico)}<span class="nav-text">${label}</span>${key==='opportunities'?`<span class="nav-count">${n(productMode?P.filters.length+P.explore.length:candidates.length)}</span>`:''}</a>`).join('');
   document.querySelectorAll('[data-icon]').forEach(el => el.innerHTML = icon(el.dataset.icon));
   $('#workspace-name').textContent = D.model.category || (schemaOnly ? 'WANDS' : 'Espace local');
   $('#snapshot-state').textContent = stateLabel;
@@ -114,6 +124,14 @@
   $('#scope-notice').textContent = semanticReview
     ? 'Aperçu en lecture seule · modèle WANDS reconstitué, non officiel. Revue sémantique fournie ; propositions à confirmer, capacités de filtrage inconnues.'
     : 'Aperçu local en lecture seule · modèle WANDS reconstitué, non officiel. Détection lexicale : correspondances candidates, sans validation des requêtes complètes. Non qualifiée ≠ attribut manquant.';
+  if(productMode){
+    document.body.classList.add('product-workspace');
+    $('#scope-notice').hidden=true;
+    $('#category').textContent=`${D.model.category} · Catalogue par catégorie`;
+    $('#period').hidden=true;
+    $('#footer-context').textContent='Suggestions · aucun changement publié';
+    $('#methodology').textContent='Sources & méthode';
+  }
   if(schemaOnly) document.querySelectorAll('a[href="#runs"]').forEach(a => {a.setAttribute('aria-label','Voir les exécutions');a.title='Exécutions';if(a.classList.contains('history-link'))a.innerHTML=`${icon('history')} Exécutions`;});
   function empty(title,description='') { return `<div class="empty">${icon('search')}<h2>${esc(title)}</h2><p>${esc(description)}</p></div>`; }
   function announce(text) { $('#announcement').textContent = text; }
@@ -133,6 +151,7 @@
     return `<div class="table-wrap"><table class="opportunity-table" aria-label="Opportunités de connaissance"><thead><tr><th>Besoin client</th><th>${schemaOnly?'Qualification':'Diagnostic'}</th><th>${schemaOnly?'Requêtes':'Demandes'}</th><th class="channel-col">${schemaOnly?'Sources':'Canaux'}</th>${schemaOnly?'':'<th class="coverage-col">Modèle actuel</th>'}<th class="open-col"><span class="sr-only">Détail</span></th></tr></thead><tbody>${items.map(c=>`<tr><td><button class="item-title" data-candidate="${esc(c.key)}">${esc(candidateTitle(c))}</button><span class="item-subtitle">${n(countRecords(c))} texte${countRecords(c)>1?'s':''} source${countRecords(c)>1?'s':''}</span></td><td>${badge(c.gap_type)}</td><td><span class="cell-metric"><b class="num">${n(volume(c))}</b><span class="mini-track"><i style="width:${Math.min(100,100*volume(c)/maxVolume)}%"></i></span></span></td><td class="channel-col">${channelSymbols(c)}</td>${schemaOnly?'':`<td class="coverage-col">${coverage(c)}</td>`}<td class="open-col"><button class="icon-button" data-candidate="${esc(c.key)}" aria-label="Examiner ${esc(candidateTitle(c))}">${icon('chevron')}</button></td></tr>`).join('')}</tbody></table></div><div class="table-bottom"><span>${compact?`${n(items.length)} ${reviewLabel} · ${schemaOnly?'requêtes du corpus':'priorité par volume'}`:`${n(total)} ${reviewLabel}`}</span>${compact?'<a href="#opportunities" class="text-button">Tout explorer</a>':pager(total)}</div>`;
   }
   function overview() {
+    if(productMode)return productOverview();
     const s=D.summary;
     let start=0; const slices=Object.entries(gaps).map(([key,g])=>{let end=start+(gapCount(key)/Math.max(1,candidates.length))*100;const out=`${g.color} ${start}% ${end}%`;start=end;return out;}).join(',');
     const metrics = schemaOnly
@@ -153,7 +172,55 @@
   }
   function searchBox(placeholder) {return `<label class="search-field">${icon('search')}<input id="search" type="search" aria-label="${esc(placeholder)}" placeholder="${esc(placeholder)}" value="${esc(query)}"></label>`;}
   function pager(total) {return total>PAGE_SIZE?`<span class="pagination"><button data-page-step="-1" aria-label="Page précédente" ${pageIndex===0?'disabled':''}>${icon('back')}</button>${pageIndex+1} / ${Math.ceil(total/PAGE_SIZE)}<button data-page-step="1" aria-label="Page suivante" ${(pageIndex+1)*PAGE_SIZE>=total?'disabled':''}>${icon('chevron')}</button></span>`:'';}
+  const productLabels = {filters:'Filtres suggérés',explore:'À explorer',uncertain:'Critères à préciser'};
+  const basisLabels = {existing_attribute:'Données présentes',derived_filter:'Règle à définir',missing_attribute:'Attribut à documenter',unobserved_value:'Valeur à vérifier',unresolved:'Sens à préciser'};
+  const actionLabels = {existing_attribute:'Proposer le filtre',derived_filter:'Définir la règle',missing_attribute:'Documenter',unobserved_value:'Vérifier la valeur',unresolved:'Préciser le besoin'};
+  const productActions = {
+    existing_attribute:'Proposer ce filtre à partir des données du catalogue.',
+    derived_filter:'Définir la règle qui transforme les données existantes en filtre.',
+    missing_attribute:'Explorer les sources produit pour documenter ce critère.',
+    unobserved_value:'Vérifier si cette valeur existe dans les sources produit.',
+    unresolved:'Préciser le sens de la demande avant de proposer un filtre.'
+  };
+  function productValues(item,limit=3){
+    return item.values?.length?`<div class="tags requested-values">${item.values.slice(0,limit).map(v=>`<span class="tag">${esc(valueText(v))}</span>`).join('')}${item.values.length>limit?`<span class="tag more-values">+${n(item.values.length-limit)}</span>`:''}</div>`:'<span class="muted">À définir</span>';
+  }
+  function filteredProducts(mode=recommendationMode){
+    const q=query.toLocaleLowerCase();
+    return (P[mode]||[]).filter(item=>(categoryFilter==='all'||(categoryFilter==='unassigned'?!item.category_refs.length:item.category_refs.includes(categoryFilter)))&&[item.label,...item.category_refs,...(item.values||[]).map(valueText),...item.record_ids.map(id=>demandById.get(id)?.text||'')].join(' ').toLocaleLowerCase().includes(q)).sort((a,b)=>sort==='name'?a.label.localeCompare(b.label):b.demand_count-a.demand_count||a.label.localeCompare(b.label));
+  }
+  function productTable(items,total=items.length,compact=false){
+    if(!items.length)return empty('Aucune recommandation affichée','Essayez une autre catégorie ou recherche.');
+    return `<div class="table-wrap"><table class="recommendation-table" aria-label="Recommandations pour le catalogue"><thead><tr><th>${recommendationMode==='uncertain'?'Besoin':'Filtre ou critère'}</th><th>Valeurs demandées</th><th>Demandes</th><th>Prochaine étape</th><th class="open-col"><span class="sr-only">Détail</span></th></tr></thead><tbody>${items.map(item=>`<tr><td><button class="item-title" data-product="${esc(item.id)}">${esc(item.label)}</button><span class="item-subtitle">${esc(item.category_refs.join(' · ')||'Catégorie à préciser')}</span></td><td>${productValues(item)}</td><td class="num demand-count">${n(item.demand_count)}</td><td><span class="basis-badge ${esc(item.basis)}">${esc(actionLabels[item.basis])}</span></td><td class="open-col"><button class="icon-button" data-product="${esc(item.id)}" aria-label="Voir ${esc(item.label)}">${icon('chevron')}</button></td></tr>`).join('')}</tbody></table></div>${compact?'':`<div class="table-bottom"><span>${n(total)} ${recommendationMode==='uncertain'?'besoins':'recommandations'}</span>${pager(total)}</div>`}`;
+  }
+  function productOverview(){
+    const preview=(mode,title,subtitle)=>`<section class="panel"><div class="panel-heading"><div><h2>${title}</h2><small>${subtitle}</small></div><a class="text-button" href="#opportunities?mode=${mode}">Tout voir ${icon('chevron')}</a></div><div class="recommendation-preview">${P[mode].slice(0,5).map(item=>`<button class="preview-row" data-product="${esc(item.id)}"><span><strong>${esc(item.label)}</strong><small>${esc(item.category_refs.join(' · ')||'Catégorie à préciser')}</small>${productValues(item,2)}</span><span class="preview-count"><b>${n(item.demand_count)}</b><small>demande${item.demand_count>1?'s':''}</small></span>${icon('chevron')}</button>`).join('')||empty('Aucun élément')}</div></section>`;
+    return `${notice()}<div class="metrics">${metric('Filtres suggérés',P.filters.length,'Données à valoriser','opportunities',true)}${metric('À explorer',P.explore.length,'Connaissance à enrichir','search')}${metric('Demandes à préciser',new Set(P.uncertain.flatMap(i=>i.record_ids)).size,'Interprétation à compléter','demands')}${metric('Demandes analysées',D.analysis.reviewed_records,'Dans cet échantillon','sources')}</div><div class="product-overview-grid">${preview('filters','Améliorer les filtres','À rapprocher des filtres déjà en place.')}${preview('explore','Enrichir le catalogue','Critères et valeurs à documenter.')}</div>`;
+  }
+  function productOpportunities(){
+    const items=filteredProducts();
+    const categories=[...new Set([...P.filters,...P.explore,...P.uncertain].flatMap(item=>item.category_refs))];
+    return `${notice()}<div class="filter-tabs product-tabs" aria-label="Type de recommandation">${Object.entries(productLabels).map(([mode,label])=>`<button data-recommendation-mode="${mode}" class="${recommendationMode===mode?'active':''}" aria-pressed="${recommendationMode===mode}">${label}<span>${n(P[mode].length)}</span></button>`).join('')}</div><section class="panel"><div class="toolbar">${searchBox('Rechercher un filtre, une valeur…')}<select id="category-filter" aria-label="Catégorie du catalogue">${categoryOptions(categories)}<option value="unassigned" ${categoryFilter==='unassigned'?'selected':''}>Catégorie à préciser</option></select><select id="sort" aria-label="Trier les recommandations"><option value="volume" ${sort==='volume'?'selected':''}>Les plus demandés</option><option value="name" ${sort==='name'?'selected':''}>Ordre alphabétique</option></select></div><div id="table-content">${productTable(items.slice(pageIndex*PAGE_SIZE,(pageIndex+1)*PAGE_SIZE),items.length)}</div></section><p class="product-footnote">À rapprocher des filtres déjà en place · nombre de demandes dans l’échantillon.</p>`;
+  }
+  function openProductItem(id){
+    const item=productItemById.get(id);if(!item)return;
+    activeCandidate=null;activeFacet=null;
+    const facet=facetByKey.get(item.fact_key);
+    const proofs=item.proofs||[];
+    const first=proofs.slice(0,1).map(proofCard).join('');
+    inspectorOpen(`<div class="drawer-heading product-heading"><span class="basis-badge ${esc(item.basis)}">${esc(basisLabels[item.basis])}</span><h2 id="inspector-title">${esc(item.label)}</h2><p>${esc(item.category_refs.join(' · ')||'Catégorie à préciser')} · ${n(item.demand_count)} demande${item.demand_count>1?'s':''}</p></div><div class="drawer-body product-detail"><section class="recommendation-action"><h3>${esc(productActions[item.basis])}</h3>${productValues(item,50)}</section>${facet?`<section class="available-data"><span>Donnée disponible</span><button class="text-button" data-facet="${esc(facet.key)}">${esc(facet.label||facet.key)} ${icon('chevron')}</button>${item.model_values?.length?`<small>${esc(item.model_values.slice(0,8).map(valueText).join(' · '))}${item.model_values.length>8?'…':''}</small>`:''}</section>`:''}<h3>Dans les mots des clients</h3>${first||'<p>Aucune citation disponible.</p>'}${proofs.length>1?`<details class="more-proofs"><summary>Voir les autres citations (${n(proofs.length-1)})</summary>${proofs.slice(1).map(proofCard).join('')}</details>`:''}<details class="decision-details"><summary>Pourquoi cette recommandation ?</summary>${[...new Set(item.rationales||[])].map(r=>`<p>${esc(r)}</p>`).join('')||'<p>Critère identifié dans les demandes ci-dessus.</p>'}<p>${item.basis==='existing_attribute'||item.basis==='derived_filter'?'Le modèle contient les données utiles ; la présence du filtre sur le site reste à vérifier.':'L’absence de correspondance dans cet échantillon ne prouve pas une absence dans tout le catalogue.'}</p></details></div>`,item.basis==='unresolved'?'DEMANDE À PRÉCISER':P.filters.includes(item)?'FILTRE SUGGÉRÉ':'À EXPLORER');
+  }
+  function productDemandTable(items,total){
+    if(!items.length)return empty('Aucune demande affichée','Modifiez la recherche ou la catégorie.');
+    return `<div class="table-wrap"><table class="demand-table product-demand-table" aria-label="Demandes sources"><thead><tr><th>Demande client</th><th>Catégorie</th><th>Critères identifiés</th></tr></thead><tbody>${items.map(r=>{const labels=[...new Set([...representedMatches(r).map(p=>p.requested_value!=null?`${p.label} : ${p.requested_value}`:p.label),...r.matches.map(m=>candidateByKey.get(m.candidate_key)).filter(c=>c&&c.gap_type!=='unresolved_intent').map(candidateTitle)])];return `<tr><td class="quote-cell"><button data-demand="${esc(r.id)}">${esc(r.text)}</button></td><td>${esc(demandCategory(r))}</td><td><div class="tags">${labels.slice(0,3).map(label=>`<span class="tag">${esc(label)}</span>`).join('')}${labels.length>3?`<span class="muted small">+${n(labels.length-3)}</span>`:''}${!labels.length?'<span class="muted">À préciser</span>':''}</div></td></tr>`;}).join('')}</tbody></table></div><div class="table-bottom"><span>${n(total)} demandes</span>${pager(total)}</div>`;
+  }
+  function openProductDemand(r){
+    activeCandidate=null;activeFacet=null;
+    const related=[...productItemById.values()].filter(i=>i.record_ids.includes(r.id));
+    inspectorOpen(`<div class="drawer-heading"><h2 id="inspector-title">${esc(r.text)}</h2><p>${esc(demandCategory(r))}</p></div><div class="drawer-body product-detail"><h3>Ce que cette demande suggère</h3><div class="demand-recommendations">${related.map(i=>`<button class="demand-recommendation" data-product="${esc(i.id)}"><span><strong>${esc(i.label)}</strong>${productValues(i,3)}<small>${esc(basisLabels[i.basis])}</small></span>${icon('chevron')}</button>`).join('')||'<p>Type de produit déjà représenté ; aucun filtre supplémentaire proposé.</p>'}</div><details class="decision-details"><summary>Interprétation et références</summary>${representedMatches(r).map(representedDetail).join('')}<p class="mono">${esc(r.id)} · ${esc(channel(r.source))}</p></details></div>`,'DEMANDE CLIENT');
+  }
   function opportunities() {
+    if(productMode)return productOpportunities();
     const items=filteredCandidates();
     return `${notice()}<div class="filter-tabs" aria-label="Diagnostics"><button data-gap="all" class="${gapFilter==='all'?'active':''}" aria-pressed="${gapFilter==='all'}">Tous<span>${n(candidates.length)}</span></button>${Object.entries(gaps).map(([key,g])=>`<button data-gap="${key}" class="${gapFilter===key?'active':''}" aria-pressed="${gapFilter===key}">${g.plural}<span>${n(gapCount(key))}</span></button>`).join('')}</div><section class="panel"><div class="toolbar">${searchBox('Rechercher un besoin ou une citation')}<select id="source-filter" aria-label="Filtrer par source">${sourceOptions()}</select><select id="sort" aria-label="Trier les opportunités"><option value="volume" ${sort==='volume'?'selected':''}>${schemaOnly?'Nombre de requêtes du corpus':'Demande décroissante'}</option><option value="name" ${sort==='name'?'selected':''}>Nom du besoin</option><option value="sources" ${sort==='sources'?'selected':''}>Nombre de sources</option></select></div><div id="table-content">${opportunityTable(items.slice(pageIndex*PAGE_SIZE,(pageIndex+1)*PAGE_SIZE),false,items.length)}</div></section>`;
   }
@@ -167,9 +234,10 @@
     return `<div class="tags">${links}${represented}${qualification||(!links&&!represented?'<span class="muted">Aucun écart rattaché</span>':'')}</div>`;
   }
   function demandTable(items,total) {
+    if(productMode)return productDemandTable(items,total);
     return items.length?`<div class="table-wrap"><table class="demand-table" aria-label="Demandes sources"><thead><tr><th>${schemaOnly?'Requête originale':'Demande originale'}</th><th>Catégorie</th><th>Source</th>${schemaOnly?'':'<th>Volume</th>'}${schemaOnly||unknownPeriod?'':'<th class="date-col">Date</th>'}<th>${schemaOnly?(semanticReview?'Qualification proposée':'Qualification lexicale'):'Besoins associés'}</th></tr></thead><tbody>${items.map(r=>`<tr><td class="quote-cell"><button data-demand="${esc(r.id)}">${esc(r.text||'Texte intégral indisponible')}</button><span class="item-subtitle">${esc(r.id)}${r.excerpt_only?' · extrait disponible uniquement':''}</span></td><td>${esc(demandCategory(r))}</td><td>${esc(channel(r.source))}</td>${schemaOnly?'':`<td class="num">${n(r.count||1)}</td>`}${schemaOnly||unknownPeriod?'':`<td class="date-col muted">${esc(r.date||'—')}</td>`}<td>${demandTags(r)}</td></tr>`).join('')}</tbody></table></div><div class="table-bottom"><span>${n(total)} ${schemaOnly?'requêtes du corpus':'formulations'} · chaque ligne compte une seule fois</span>${pager(total)}</div>`:empty('Aucune demande affichée','Modifiez la recherche, la catégorie ou la source.');
   }
-  function demands(){const items=filteredDemands();return `<section class="panel"><div class="toolbar">${searchBox('Rechercher dans les demandes')}<select id="category-filter" aria-label="Filtrer par catégorie de requête">${categoryOptions(D.demands.map(demandCategory),categoryFilter,'Toutes les catégories de requêtes')}</select><select id="source-filter" aria-label="Filtrer par source">${sourceOptions()}</select></div><div id="table-content">${demandTable(items.slice(pageIndex*PAGE_SIZE,(pageIndex+1)*PAGE_SIZE),items.length)}</div>${schemaOnly?'<div class="placeholder-note">Les catégories de requêtes (query_class) et les catégories produit (product_class) du modèle sont des taxonomies distinctes ; aucune équivalence n’est présumée.</div>':''}</section>`;}
+  function demands(){const items=filteredDemands();return `<section class="panel"><div class="toolbar">${searchBox('Rechercher dans les demandes')}<select id="category-filter" aria-label="Filtrer par catégorie de requête">${categoryOptions(D.demands.map(demandCategory),categoryFilter,'Toutes les catégories de requêtes')}</select><select id="source-filter" aria-label="Filtrer par source">${sourceOptions()}</select></div><div id="table-content">${demandTable(items.slice(pageIndex*PAGE_SIZE,(pageIndex+1)*PAGE_SIZE),items.length)}</div>${schemaOnly&&!productMode?'<div class="placeholder-note">Les catégories de requêtes (query_class) et les catégories produit (product_class) du modèle sont des taxonomies distinctes ; aucune équivalence n’est présumée.</div>':''}</section>`;}
   function values(v){return Array.isArray(v)&&v.length?`<div class="tags">${v.map(x=>`<span class="tag">${esc(typeof x==='object'?JSON.stringify(x):x)}</span>`).join('')}</div>`:'<span class="muted small">Valeurs non renseignées</span>';}
   function filteredAttributes(){const q=query.toLocaleLowerCase();return D.attributes.filter(f=>(categoryFilter==='all'||scopes(f).includes(categoryFilter))&&([f.key,f.label,f.definition,...scopes(f)].join(' ').toLocaleLowerCase().includes(q)||(f.values||[]).some(v=>(categoryFilter==='all'||valueScopes(f,v).includes(categoryFilter))&&valueText(v).toLocaleLowerCase().includes(q))));}
   function attributeTable(items,total){
@@ -209,6 +277,7 @@
   }
   function updateTable(){
     pageIndex=0;
+    if(page==='opportunities'&&productMode){const items=filteredProducts();$('#table-content').innerHTML=productTable(items.slice(0,PAGE_SIZE),items.length);announce(`${items.length} recommandations`);return;}
     if(page==='opportunities'){const items=filteredCandidates();$('#table-content').innerHTML=opportunityTable(items.slice(0,PAGE_SIZE),false,items.length);announce(`${items.length} opportunités`);}
     if(page==='demands'){const items=filteredDemands();$('#table-content').innerHTML=demandTable(items.slice(0,PAGE_SIZE),items.length);announce(`${items.length} demandes`);}
     if(page==='model'){const items=filteredAttributes();$('#table-content').innerHTML=attributeTable(items.slice(0,PAGE_SIZE),items.length);announce(`${items.length} attributs`);}
@@ -218,7 +287,7 @@
     if(!r?.excerpt_only&&typeof text==='string'&&Number.isInteger(p.start)&&Number.isInteger(p.end)&&Array.from(text).slice(p.start,p.end).join('')===p.quote){const chars=Array.from(text);return esc(chars.slice(0,p.start).join(''))+'<mark>'+esc(p.quote)+'</mark>'+esc(chars.slice(p.end).join(''));}
     return esc((!r?.excerpt_only&&text)||p.quote||text||'Citation indisponible');
   }
-  function proofCard(p){const r=demandById.get(p.record_id);return `<article class="evidence-card"><div class="evidence-meta"><span>${icon(channelIcon(p.source))}${esc(channel(p.source))}</span><span>${schemaOnly?esc(r?demandCategory(r):'Catégorie non renseignée'):`${n(p.count||1)} demande${(p.count||1)>1?'s':''}`}</span></div><blockquote>${quoted(r,p)}</blockquote>${p.interpretation?`<p class="evidence-note"><strong>Interprétation proposée :</strong> ${esc(p.interpretation)}</p>`:''}${p.rationale?`<p class="evidence-note"><strong>Justification :</strong> ${esc(p.rationale)}</p>`:''}<footer><span>${esc(p.record_id)}${r?.excerpt_only?' · extrait uniquement':''}</span><span>${!schemaOnly&&!unknownPeriod&&r?.date?esc(r.date)+' · ':''}${Number.isInteger(p.start)?`[${p.start}, ${p.end})`:''}</span></footer></article>`;}
+  function proofCard(p){const r=demandById.get(p.record_id);if(productMode)return `<article class="evidence-card compact-proof"><blockquote>${quoted(r,p)}</blockquote><button class="text-button" data-demand="${esc(p.record_id)}">Voir la demande ${icon('chevron')}</button><details><summary>Source</summary><p class="mono">${esc(p.record_id)} · ${esc(channel(p.source))}${Number.isInteger(p.start)?` · [${p.start}, ${p.end})`:''}</p></details></article>`;return `<article class="evidence-card"><div class="evidence-meta"><span>${icon(channelIcon(p.source))}${esc(channel(p.source))}</span><span>${schemaOnly?esc(r?demandCategory(r):'Catégorie non renseignée'):`${n(p.count||1)} demande${(p.count||1)>1?'s':''}`}</span></div><blockquote>${quoted(r,p)}</blockquote>${p.interpretation?`<p class="evidence-note"><strong>Interprétation proposée :</strong> ${esc(p.interpretation)}</p>`:''}${p.rationale?`<p class="evidence-note"><strong>Justification :</strong> ${esc(p.rationale)}</p>`:''}<footer><span>${esc(p.record_id)}${r?.excerpt_only?' · extrait uniquement':''}</span><span>${!schemaOnly&&!unknownPeriod&&r?.date?esc(r.date)+' · ':''}${Number.isInteger(p.start)?`[${p.start}, ${p.end})`:''}</span></footer></article>`;}
   function inspectorOpen(html,kind=schemaOnly?'À EXAMINER':'OPPORTUNITÉ'){$('#inspector-content').innerHTML=html;$('#inspector-kind').textContent=kind;if(!$('#inspector').open){lastFocus=document.activeElement;$('#inspector').showModal();}$('#inspector').scrollTop=0;}
   function detailBody(c){
     const gap=(c.value_status==='not_observed_semantic'?{...gaps.value_gap,diagnosis:'La revue ne propose pas de valeur observée correspondant au besoin ; cette conclusion reste à confirmer.'}:gaps[c.gap_type])||{diagnosis:'Diagnostic non renseigné.',next:'Examiner la demande.'};
@@ -235,6 +304,7 @@
     return `<div class="diagnosis"><h3>${esc(gap.diagnosis)}</h3><p>${esc(gap.next)}</p></div><div class="comparison-box"><div><small>DEMANDE OBSERVÉE</small><strong>${esc(c.label)}</strong><p>${n(c.demand_events)} événements sur ${n(uniqueSources(c).length)} canaux.</p></div><div><small>MODÈLE MÉTIER ACTUEL</small><strong>${c.gap_type==='schema_gap'?'Aucun attribut correspondant':c.gap_type==='unresolved_intent'?'Intention non établie':esc(c.key)}</strong><p>${c.gap_type==='schema_gap'?'La demande reste visible même sans preuve produit.':c.gap_type==='unresolved_intent'?'Aucune correspondance n’est affirmée.':`${n(c.known_assignment_count)} / ${n(D.summary.inventory_products)} produits renseignés dans le modèle d’entrée.`}</p></div></div><div class="title-actions" style="margin:26px 0 14px"><h3>Dans les mots des clients</h3><button class="text-button" data-detail-tab="evidence">Tout voir (${n(countRecords(c))})</button></div>${proofs.slice(0,2).map(proofCard).join('')||empty('Aucune citation disponible')}`;
   }
   function openCandidate(key,tabName='diagnostic'){
+    if(productMode){const item=[...productItemById.values()].find(i=>i.candidate_keys.includes(key));if(item)return openProductItem(item.id);}
     const c=candidateByKey.get(key);if(!c)return;
     activeCandidate=key;activeFacet=null;detailTab=tabName;
     inspectorOpen(`<div class="drawer-heading">${badge(c.gap_type)}<h2 id="inspector-title">${esc(candidateTitle(c))}</h2><span class="mono muted">${esc(c.key)}</span><p>${esc(c.definition||'Définition à préciser à partir de la demande.')}</p><div class="drawer-stats"><div><strong class="num">${n(volume(c))}</strong><small>${schemaOnly?'requêtes du corpus':'demandes'}</small></div><div><strong class="num">${n(countRecords(c))}</strong><small>formulations</small></div><div><strong class="num">${n(uniqueSources(c).length)}</strong><small>sources</small></div></div></div><div class="drawer-tabs" aria-label="Détail de l’opportunité">${[['diagnostic','Diagnostic'],['evidence','Demandes sources'],['definition','Définition']].map(([key,label])=>`<button data-detail-tab="${key}" class="${detailTab===key?'active':''}" aria-pressed="${detailTab===key}">${label}</button>`).join('')}</div><div class="drawer-body">${detailBody(c)}</div>`);
@@ -243,7 +313,7 @@
     const facet=facetByKey.get(p.fact_key);
     return `<section class="method-section"><h3>${esc(p.label||p.fact_key||'Critère représenté')}</h3><p>${esc(p.rationale||'')}</p>${facet?`<p>Attribut du modèle : <button class="text-button" data-facet="${esc(facet.key)}">${esc(facet.label||facet.key)}</button></p>`:''}${p.matched_value!=null?`<p>Valeur du modèle : ${esc(p.matched_value)}</p>`:''}${p.category_refs?.length?`<p>Catégories du modèle : ${scopeSummary(p.category_refs)}</p>`:''}${p.evidence?proofCard(p.evidence):''}</section>`;
   }
-  function openDemand(id){const r=demandById.get(id);if(!r)return;activeCandidate=null;activeFacet=null;inspectorOpen(`<div class="drawer-heading"><h2 id="inspector-title">${schemaOnly?'Requête du corpus':'Demande source'}</h2><span class="mono muted">${esc(r.id)}</span><p>Catégorie de requête : ${esc(demandCategory(r))}</p></div><div class="drawer-body">${proofCard({record_id:r.id,source:r.source,quote:r.text,count:r.count})}<h3>${schemaOnly?'Rapprochements candidats':'Besoins associés'}</h3>${demandTags(r)}${semanticReview?representedMatches(r).map(representedDetail).join(''):''}${schemaOnly?`<p>${esc(lexicalDescription)}</p>`:''}${schemaOnly?representedMatches(r).filter(p=>p.value_evidence).map(p=>`<h3>${esc(valueStatus(p.value_status))}</h3>${proofCard(p.value_evidence)}`).join(''):''}</div>`,'DEMANDE CLIENT');}
+  function openDemand(id){const r=demandById.get(id);if(!r)return;if(productMode)return openProductDemand(r);activeCandidate=null;activeFacet=null;inspectorOpen(`<div class="drawer-heading"><h2 id="inspector-title">${schemaOnly?'Requête du corpus':'Demande source'}</h2><span class="mono muted">${esc(r.id)}</span><p>Catégorie de requête : ${esc(demandCategory(r))}</p></div><div class="drawer-body">${proofCard({record_id:r.id,source:r.source,quote:r.text,count:r.count})}<h3>${schemaOnly?'Rapprochements candidats':'Besoins associés'}</h3>${demandTags(r)}${semanticReview?representedMatches(r).map(representedDetail).join(''):''}${schemaOnly?`<p>${esc(lexicalDescription)}</p>`:''}${schemaOnly?representedMatches(r).filter(p=>p.value_evidence).map(p=>`<h3>${esc(valueStatus(p.value_status))}</h3>${proofCard(p.value_evidence)}`).join(''):''}</div>`,'DEMANDE CLIENT');}
   function methodology(){
     activeCandidate=null;activeFacet=null;
     if(schemaOnly){inspectorOpen(`<div class="drawer-heading"><h2 id="inspector-title">Méthode & comptage</h2></div><div class="drawer-body"><section class="method-section"><h3>Requêtes du corpus</h3><p>Chaque ligne compte une seule fois. Le champ count est un poids d’échantillonnage, pas une fréquence réelle ni un nombre d’événements clients. Période d’observation inconnue. Une requête peut contribuer à plusieurs pistes ; leurs nombres ne sont pas additionnables.</p></section><section class="method-section"><h3>Modèle reconstitué et valeurs observées</h3><p>${esc(schemaDescription)} Les valeurs observées sont non exhaustives et ne constituent pas des listes canoniques de valeurs autorisées.</p></section><section class="method-section"><h3>${esc(analysisLabel)}</h3>${semanticReview?`<p>${n(D.analysis.reviewed_records)} requêtes · ${n(D.analysis.reviewed_criteria)} critères revus. Décisions d’agents importées${D.analysis.independent_audit===false?' · sans audit indépendant':''}.</p>`:''}<p>${esc(lexicalDescription)} Une correspondance exacte avec une valeur ne valide pas les autres contraintes de la requête. Une valeur non observée reste à confirmer ; les valeurs non décodées restent non évaluées ou à qualifier.</p></section><section class="method-section"><h3>Catégories distinctes</h3><p>query_class décrit les requêtes et product_class les catégories produit du modèle. Ces taxonomies ne sont pas identiques ; aucune équivalence automatique n’est affirmée par cette vue.</p></section><section class="method-section"><h3>Aperçu en lecture seule</h3><p>La comparaison porte sur les requêtes et le modèle de données avec ses valeurs observées, sans instances produit. Aucun appel distant ni modification du modèle n’est effectué.</p></section></div>`,'MÉTHODOLOGIE');return;}
@@ -254,7 +324,7 @@
     if(page==='model'){data=JSON.stringify(D.model,null,2);name='pilon-benchmark-model.json';type='application/json';}
     else {
       const csvCell=v=>{let s=String(v??'');if(/^(?:\s*[=+@\-]|[\t\r\n])/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
-      const rows=schemaOnly?(page==='demands'?[['id','source','query_class','text','sampling_weight','lexical_candidates'],...filteredDemands().map(r=>[r.id,r.source,r.query_class,r.text,r.count??1,JSON.stringify(representedMatches(r))])]:page==='sources'?[['source','corpus_queries'],...Object.entries(D.channels).map(([s,c])=>[s,c.records])]:[['key','label','gap_type','corpus_queries','requested_value','value_status'],...(page==='opportunities'?filteredCandidates():candidates).map(c=>[c.key,candidateTitle(c),c.gap_type,countRecords(c),c.requested_value,c.value_status])]):page==='demands'?[['id','source','text','count'],...filteredDemands().map(r=>[r.id,r.source,r.text,r.count||1])]:page==='sources'?[['source','records','events'],...Object.entries(D.channels).map(([s,c])=>[s,c.records,c.events])]:[['key','label','gap_type','demand_events','source_records','known_assignment_count'],...(page==='opportunities'?filteredCandidates():candidates).map(c=>[c.key,candidateTitle(c),c.gap_type,c.demand_events,countRecords(c),c.known_assignment_count])];
+      const rows=productMode&&['overview','opportunities'].includes(page)?[['recommendation','category','values','basis','source_query_count','source_query_ids','fact_key'],...(page==='opportunities'?filteredProducts():[...P.filters,...P.explore]).map(i=>[i.label,i.category_refs.join(' | '),i.values.map(valueText).join(' | '),i.basis,i.demand_count,i.record_ids.join(' | '),i.fact_key])]:schemaOnly?(page==='demands'?[['id','source','query_class','text','sampling_weight','lexical_candidates'],...filteredDemands().map(r=>[r.id,r.source,r.query_class,r.text,r.count??1,JSON.stringify(representedMatches(r))])]:page==='sources'?[['source','corpus_queries'],...Object.entries(D.channels).map(([s,c])=>[s,c.records])]:[['key','label','gap_type','corpus_queries','requested_value','value_status'],...(page==='opportunities'?filteredCandidates():candidates).map(c=>[c.key,candidateTitle(c),c.gap_type,countRecords(c),c.requested_value,c.value_status])]):page==='demands'?[['id','source','text','count'],...filteredDemands().map(r=>[r.id,r.source,r.text,r.count||1])]:page==='sources'?[['source','records','events'],...Object.entries(D.channels).map(([s,c])=>[s,c.records,c.events])]:[['key','label','gap_type','demand_events','source_records','known_assignment_count'],...(page==='opportunities'?filteredCandidates():candidates).map(c=>[c.key,candidateTitle(c),c.gap_type,c.demand_events,countRecords(c),c.known_assignment_count])];
       data='\uFEFF'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n');name=`pilon-benchmark-${page}.csv`;type='text/csv;charset=utf-8';
     }
     const url=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);announce('Export téléchargé.');
@@ -264,12 +334,15 @@
     if(page!==next){query='';sourceFilter='all';gapFilter='all';categoryFilter='all';pageIndex=0;}
     page=next;const params=new URLSearchParams(raw[1]||'');if(gaps[params.get('gap')])gapFilter=params.get('gap');if(Object.hasOwn(D.channels,params.get('source')))sourceFilter=params.get('source');
     if(params.has('q'))query=params.get('q');
+    if(productMode&&page==='opportunities'){if(Object.hasOwn(productLabels,params.get('mode')))recommendationMode=params.get('mode');else if(params.has('gap'))recommendationMode=params.get('gap')==='unresolved_intent'?'uncertain':params.get('gap')==='filter_proposal'?'filters':'explore';}
     $('#inspector').close();render();window.scrollTo(0,0);
     if(page==='demands'&&demandById.has(params.get('record')))openDemand(params.get('record'));
   }
   document.addEventListener('click',e=>{
     const b=e.target.closest('button,[data-candidate]');if(!b)return;
-    if(b.dataset.candidate)openCandidate(b.dataset.candidate);
+    if(b.dataset.product)openProductItem(b.dataset.product);
+    else if(b.dataset.recommendationMode){recommendationMode=b.dataset.recommendationMode;pageIndex=0;render();}
+    else if(b.dataset.candidate)openCandidate(b.dataset.candidate);
     else if(b.dataset.facet)openFacet(b.dataset.facet);
     else if(b.dataset.valueStep){valuePageIndex+=Number(b.dataset.valueStep);updateValues();}
     else if(b.dataset.demand)openDemand(b.dataset.demand);

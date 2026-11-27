@@ -13,6 +13,16 @@
 
 CSV export follows the visible filters. Model export preserves the input JSON. The legacy complete loop report remains available at `/report` or `/reports/JOB_ID`; its CLI export is unchanged.
 
+For a completed schema-only semantic review, the workspace uses a compact catalog view:
+
+- **Suggested filters:** represented attributes with requested values, plus proposals for derived filters. Basic product-type category matches are excluded.
+- **Explore:** attributes to document or requested values to verify.
+- **Clarify:** unresolved criteria, kept separate from recommendations.
+
+Filter by catalog category to see each recommendation's requested values, distinct source-query count, and next action. The inspector opens with one quotation; further quotations, reasoning and provenance are expandable. CSV export includes recommendation scopes, values, source-query IDs and model references.
+
+The `product_view` is a deterministic projection, not a new inference pass. Groups preserve exact attribute keys and category scopes; derived filters also preserve proposal identity. All original proofs and decisions remain unchanged. Query counts are sample counts, not traffic frequencies, and must not be added across recommendations. These suggestions concern the catalog model, not individual products. Existing storefront filters are not supplied, so a suggested filter is not a claim that it is currently absent.
+
 ## Design system
 
 The self-contained assets in `src/pilon/loop/ui/` define the reusable visual system. No external font, charting library, CDN, or model request is required.

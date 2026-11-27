@@ -10,3 +10,69 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 #snapshot-state{white-space:normal;max-width:min(440px,46vw)}.source-row.schema-source-row{grid-template-columns:1fr 100px}.badge.filter_proposal{background:#eaf5f1;color:#346c61}.filter_proposal.swatch{background:#599b90}.scope-details{margin-top:5px;font-size:12px;color:var(--muted)}.scope-details summary{cursor:pointer}.scope-details p{margin-top:8px;overflow-wrap:anywhere}.evidence-note{font-size:12px;line-height:1.6;color:var(--muted);margin:8px 0}
+
+/* Product decisions first; provenance and reasoning stay in the detail. */
+.product-workspace #eyebrow{display:none}
+.product-workspace nav .nav-count{display:none}
+.product-workspace .context-line{margin-block:15px 23px}
+.product-workspace .toolbar select{max-width:260px}
+.product-workspace .toolbar .search-field{min-width:210px;max-width:none}
+.product-tabs button{padding:10px 14px}
+.product-tabs button.active{background:var(--accent-soft);border-color:#ded7fc;color:var(--accent)}
+.product-tabs button:last-child{margin-left:auto}
+.product-footnote{font-size:12px;color:var(--muted);margin-top:12px}
+.recommendation-table{table-layout:fixed}
+.recommendation-table th:first-child{width:28%}
+.recommendation-table th:nth-child(2){width:29%}
+.recommendation-table th:nth-child(3){width:12%}
+.recommendation-table th:nth-child(4){width:25%}
+.recommendation-table th:last-child{width:6%}
+.recommendation-table td{padding-block:20px;overflow-wrap:anywhere}
+.recommendation-table .item-title{line-height:1.4;font-size:15px}
+.recommendation-table .item-subtitle{font-size:12px;margin-top:6px}
+.requested-values .tag{font-size:12px;background:#f5f6fa;border:0;padding:4px 8px;white-space:normal;overflow-wrap:anywhere}
+.requested-values .more-values{background:none;color:var(--muted)}
+.basis-badge{display:inline-block;font-size:12px;font-weight:500;line-height:1.4;color:#687084}
+.basis-badge.existing_attribute{color:#28745d}
+.basis-badge.derived_filter{color:#6352d9}
+.basis-badge.missing_attribute,.basis-badge.unobserved_value{color:#946324}
+.demand-count{font-weight:650}
+.product-overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.product-overview-grid .panel-heading{align-items:flex-start}
+.product-overview-grid .panel-heading .text-button{white-space:nowrap}
+.preview-row{width:100%;border:0;border-top:1px solid var(--line);background:white;text-align:left;padding:19px 23px;display:flex;align-items:center;gap:14px}
+.preview-row:hover{background:#faf9fe}
+.preview-row>span:first-child{flex:1;min-width:0}
+.preview-row strong{font-size:15px;display:block}
+.preview-row small{display:block;font-size:12px;margin-top:4px}
+.preview-row .tags{margin-top:10px}
+.preview-count{text-align:right;flex:none}
+.preview-count b{font-size:18px;font-weight:600}
+.preview-count small{font-size:11px}
+.preview-row>.icon{width:15px;color:var(--muted)}
+.product-heading{border-bottom:1px solid var(--line);padding-bottom:25px}
+.product-heading p{margin-top:8px}
+.product-detail .recommendation-action{background:#f7f6fd;border:1px solid #ebe6fa;border-radius:10px;padding:21px;margin-bottom:24px}
+.product-detail .recommendation-action h3{font-size:17px;font-weight:550;line-height:1.5;margin-bottom:15px}
+.product-detail .recommendation-action .tags{margin-bottom:0}
+.product-detail .recommendation-action .tag{background:white;font-size:14px;padding:6px 10px}
+.available-data{display:grid;grid-template-columns:1fr auto;gap:5px 15px;font-size:13px;margin:0 0 28px;padding-bottom:19px;border-bottom:1px solid var(--line)}
+.available-data>span{color:var(--muted)}
+.available-data>small{grid-column:1/-1}
+.product-detail .compact-proof{padding:18px 20px}
+.compact-proof blockquote{margin:0 0 14px;font-size:18px;line-height:1.5}
+.compact-proof>.text-button{font-size:12px}
+.product-detail .compact-proof details{margin-top:5px}
+.compact-proof details summary{padding:5px 0;font-size:11px}
+.product-detail .decision-details,.product-detail .more-proofs{border-top:1px solid var(--line);margin-top:20px;padding-top:8px}
+.product-detail .decision-details>summary,.product-detail .more-proofs>summary{font-size:14px;color:var(--ink)}
+.product-detail .decision-details p{font-size:13px;line-height:1.6}
+.demand-recommendation{width:100%;display:flex;justify-content:space-between;align-items:center;gap:15px;background:white;border:1px solid var(--line);border-radius:9px;text-align:left;padding:18px;margin-top:10px}
+.demand-recommendation:hover{border-color:#b8aaef;background:#fcfbff}
+.demand-recommendation strong{display:block;font-size:16px;margin-bottom:10px}
+.demand-recommendation small{font-size:12px;display:block}
+.demand-recommendation .tags{margin-bottom:8px}
+.product-demand-table .quote-cell{width:40%}
+.product-demand-table .quote-cell button{font-size:15px}
+@media(max-width:1180px){.product-overview-grid{grid-template-columns:1fr}.recommendation-table th,.recommendation-table td{padding-inline:12px}.recommendation-table th:last-child{display:none}.recommendation-table td:last-child{display:none}.recommendation-table th:nth-child(2){width:30%}.recommendation-table th:first-child{width:30%}.recommendation-table th:nth-child(4){width:24%}.product-workspace .toolbar select{max-width:240px}.product-tabs button{font-size:12px;padding:9px}}
+@media(max-width:640px){.product-workspace .toolbar select{max-width:100%;flex:1;min-width:0}.product-tabs{gap:0}.product-tabs button:last-child{margin-left:0}.product-tabs button{font-size:11px}.recommendation-table th,.recommendation-table td{padding:13px 10px}.recommendation-table .item-title{font-size:13px}.recommendation-table .item-subtitle{font-size:11px}.recommendation-table th:nth-child(4),.recommendation-table td:nth-child(4){display:none}.recommendation-table th:first-child{width:42%}.recommendation-table th:nth-child(2){width:42%}.recommendation-table th:nth-child(3){width:16%}.recommendation-table .tag{font-size:11px}.product-footnote{font-size:11px}.available-data{grid-template-columns:1fr}.preview-row{padding:17px}.product-workspace #snapshot-state{font-size:10px}.product-demand-table .quote-cell button{font-size:13px}}

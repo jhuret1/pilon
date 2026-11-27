@@ -5,6 +5,7 @@ from importlib.resources import files
 import json
 
 from .benchmark import _identifier
+from .recommendations import build_recommendations
 from .report import _entries, _mapping
 
 
@@ -69,7 +70,11 @@ def build_view(report, *, records=None, benchmark=None):
         s['records'] += 1
         s['events'] += r.get('count', 1)
     ready = bool(bp) or bool(candidates) or report.get('status') == 'completed'
+    product_view = (build_recommendations(model, demands, candidates, represented)
+                    if _mapping(bp.get('analysis')).get('method') == 'agent_semantic_review'
+                    and _mapping(bp.get('analysis')).get('status') == 'reviewed' else None)
     return dict(id=report.get('id'), status=report.get('status', 'empty'), ready=ready,
+                product_view=product_view,
                 synthetic=bool(report.get('synthetic')), model=model, attributes=facets, candidates=candidates,
                 demands=demands, already_represented=represented, channels=channels, jobs=deepcopy(report.get('jobs', [])),
                 error=report.get('error'), complete_inputs=complete_inputs,
