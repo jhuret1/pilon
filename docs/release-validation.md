@@ -21,5 +21,7 @@ The [observed dependency versions](tested-environment-windows-py313.txt) are a
 platform-specific reference, not a cross-platform lockfile. Linux and other Python
 versions have CI jobs configured; this local validation does not claim they were run.
 
-The project is a local Git repository at this stage. No public hosting, PyPI release,
-live provider availability or independent induction benchmark is implied.
+Source repository: https://github.com/jhuret1/pilon. This report records the local
+checks before initial publication. GitHub Actions results are reported separately
+on the repository. No PyPI release, live provider availability or independent
+induction benchmark is implied.

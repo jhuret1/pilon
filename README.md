@@ -12,9 +12,11 @@ claim calibrated precision, recall, production readiness or a fully verified ont
 
 ## Quickstart — no key, no model download
 
-Python 3.11–3.13. From this repository:
+Python 3.11–3.13:
 
 ```sh
+git clone https://github.com/jhuret1/pilon.git
+cd pilon
 python -m venv .venv
 # macOS / Linux
 source .venv/bin/activate

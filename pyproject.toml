@@ -13,6 +13,10 @@ authors = [{name = "PILON contributors"}]
 dependencies = ["Flask>=3.1,<4", "requests>=2.32,<3", "numpy>=2,<3", "filelock>=3.18,<4"]
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Topic :: Scientific/Engineering :: Artificial Intelligence"]
 
+[project.urls]
+Repository = "https://github.com/jhuret1/pilon"
+Issues = "https://github.com/jhuret1/pilon/issues"
+
 [project.optional-dependencies]
 openrouter = ["langextract[openai]==1.7.1"]
 dev = ["pytest>=8,<10", "build>=1.2,<2", "ruff>=0.14,<1"]

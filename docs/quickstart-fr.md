@@ -1,8 +1,10 @@
 # Démarrer en cinq minutes
 
-Dans le dossier du dépôt, avec Python 3.11 à 3.13 :
+Avec Python 3.11 à 3.13 :
 
 ```powershell
+git clone https://github.com/jhuret1/pilon.git
+cd pilon
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -e .
