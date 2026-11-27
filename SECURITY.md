@@ -1,20 +1,9 @@
 # Security and data handling
 
-This alpha is a local research tool, not an authenticated hosted service. The viewer
-binds only to 127.0.0.1, rejects unexpected Host headers, provides read-only endpoints
-and escapes review text. Do not expose it with a public tunnel or reverse proxy.
+The bundled workflow processes data locally. Reports preserve source text, channel labels, record IDs and matching product IDs. Apply the access controls of the original feed when saving or sharing JSON or HTML. Use redacted or aggregated customer feedback wherever possible.
 
-Credentials are read only from `OPENROUTER_API_KEY` in the current process environment.
-The package does not search parent folders or load `.env` automatically. Provider
-authorization headers are not written to SQLite. Raw requests/responses can contain
-review text; keep `runtime/` and downloaded `data/` private.
+The optional preview server binds to loopback and serves a fixed HTML report and its JSON representation. It accepts local hostnames and read-only requests. The HTML export escapes input text and works offline.
 
-Imports do not execute dataset code. Paid inference requires CLI opt-in and a budget.
-Unknown external billing outcomes are retained rather than silently repeated. Source
-text may contain prompt injection; it is labeled untrusted, but prompts do not prove
-resistance. The fixture test only checks the transport/grounding path.
+A custom extractor executes as application code with the permissions of the calling job. Its operator controls any external model calls and the data sent to them. Input records are data and cannot select executable code.
 
-For a vulnerability, contact the repository maintainer through a private channel
-available on the hosting platform. Do not post credentials or private review text in
-a public issue. This local source distribution does not configure a private reporting
-endpoint; maintainers should enable one before public hosting.
+Report vulnerabilities privately to the repository maintainer. Use synthetic records in public issues.

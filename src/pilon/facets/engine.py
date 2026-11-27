@@ -54,6 +54,28 @@ def labeled_specs(text):
             yield Spec(label, value, *match.span())
 
 
+def _catalog_specs(row, extract_specs):
+    if "extractions" not in row:
+        yield from extract_specs(row["text"])
+        return
+    annotations = row["extractions"]
+    if not isinstance(annotations, list):
+        raise ValueError(f"Expected extractions array in {row['id']}")
+    for annotation in annotations:
+        if not isinstance(annotation, dict):
+            raise ValueError(f"Invalid extraction in {row['id']}")
+        span = annotation.get("char_interval")
+        attrs = annotation.get("attributes")
+        if not isinstance(span, dict) or not isinstance(attrs, dict):
+            raise ValueError(f"Expected char_interval and attributes in {row['id']}")
+        start, end = span.get("start_pos"), span.get("end_pos")
+        text = row["text"]
+        if (type(start) is not int or type(end) is not int or
+                not 0 <= start < end <= len(text) or text[start:end] != annotation.get("extraction_text")):
+            raise ValueError(f"Unverified source quotation in {row['id']}")
+        yield Spec(_string(attrs.get("label"), "label"), _string(attrs.get("value"), "value"), start, end)
+
+
 def _records(rows, category):
     seen = {}
     for row in rows:
@@ -113,8 +135,9 @@ def explore(model, records, *, through="usage", horizon_days=30, extract_specs=l
             continue
         product = row["product_id"]
         products.add(product)
-        for spec in extract_specs(row["text"]):
-            if not (0 <= spec.start < spec.end <= len(row["text"])):
+        for spec in _catalog_specs(row, extract_specs):
+            if (type(spec.start) is not int or type(spec.end) is not int
+                    or not 0 <= spec.start < spec.end <= len(row["text"])):
                 raise ValueError(f"Invalid evidence span in {row['id']}")
             label = _key(_string(spec.label, "label"))
             value = _key(_string(spec.value, "value"))

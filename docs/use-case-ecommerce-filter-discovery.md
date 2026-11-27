@@ -15,6 +15,9 @@ still yields a candidate. Keep all products in the snapshot to calculate coverag
 
 Every record has a stable `id`, a `category`, a `role`, a channel name in `source`
 and the original `text`. Map your CRM, PIM or analytics export to these columns.
+Repeat `--signals` to read separate files in one run, for example
+`--signals catalog.csv --signals chat.jsonl --signals searches.csv`. Prefix IDs
+with a source namespace when two systems use the same local ID.
 Identical records sharing an ID count once. Conflicting versions under one ID
 raise an error. Use distinct IDs for distinct records and pseudonymous aggregates
 for demand. Counts refer to events and may include several events from one shopper.
@@ -70,7 +73,7 @@ from its own PIM record.
 After installation a job can pass a generator of dictionaries directly:
 
 ```python
-from pilon.facets import explore
+from pilon import explore
 
 def run_catalog_job(category_model, incoming_records):
     return explore(category_model, incoming_records, through="usage", horizon_days=60)
@@ -80,5 +83,17 @@ For other catalog formats, pass `extract_specs=your_callable` to `explore`.
 It receives one source text and yields `Spec(label, value, start, end)` with offsets
 into that text. The engine stores the exact slice. The extractor is responsible for
 the interpretation. This lets a team reuse its own parser or model behind the same
-evidence contract. TDA and model-backed extraction are possible adapter work.
-The supplied implementation uses deterministic phrase matching.
+evidence contract. The supplied detector uses deterministic phrase matching.
+
+For precomputed annotations, a JSONL catalog record may carry an `extractions`
+array alongside its original `text`. For example, export the character interval,
+extracted text and two attributes from a LangExtract job configured with label
+and value attributes:
+
+```json
+{"id":"feed-7","role":"catalog","source":"enrichment_job","category":"running-shoes","product_id":"SKU-07","text":"Room for toes.","extractions":[{"extraction_text":"Room for toes","char_interval":{"start_pos":0,"end_pos":13},"attributes":{"label":"Toe box","value":"wide"}}]}
+```
+
+When the field is present, the supplied annotations replace parsing for that
+record. PILON checks the quote against its offsets before using the supplied value.
+The source passage can be inspected during review of the proposed interpretation.

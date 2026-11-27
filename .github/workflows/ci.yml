@@ -1,7 +1,7 @@
-name: offline-checks
+name: discovery
 on: [push, pull_request]
 jobs:
-  test:
+  verify:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -16,17 +16,6 @@ jobs:
       - run: python -m ruff check src tests
       - run: python scripts/check_release.py
       - run: python -m pytest -q
-      - run: pilon demo --no-serve
-      - run: pilon demo ecommerce-facets
+      - run: pilon demo
       - run: python -m build
-      - name: Verify wheel contains the demo and viewer
-        run: python scripts/check_wheel.py
-  provider-adapter:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: python -m pip install -e ".[dev,openrouter]"
-      - run: python -m pytest tests/test_providers.py -q
+      - run: python scripts/check_wheel.py

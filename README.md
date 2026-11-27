@@ -1,62 +1,54 @@
-# PILON
+# PILON Discovery
 
-Find the filters shoppers ask for and see which products your catalog can substantiate.
+PILON finds gaps between what people ask for and what a knowledge system already describes. Its first workflow discovers missing **e-commerce filters** from customer feedback and product evidence.
 
-A shopper wants room for their toes. Your running-shoe store already filters by width.
-One standard-width shoe has a wide toe box, while a wide shoe has a tapered one.
-PILON compares customer language, product specifications and current filters, then
-builds a filter preview with a source for each product assignment.
+A runner asks support for “room for my toes.” The store already filters shoes by width. In the sample catalog, **Pace 01** has standard width and a wide toe box, while **Ridge 02** has wide width and a tapered toe box. PILON proposes a *Toe box* filter and shows the listing behind each assignment.
 
-## Try it locally
+## See it in one command
 
-From the repository root with Python 3.11 or later:
+From the checkout with Python 3.11 or later:
 
 ```sh
-python -m src.pilon demo ecommerce-facets
+python -m src.pilon demo
 ```
 
-Open **runtime/ecommerce-facets.html**. The example runs offline using the Python
-standard library. Expand **wide** in the Usage section to see the two matching
-products. Expand the citations in Induction to inspect what their listings say.
+Open **runtime/ecommerce-facets.html**. Explore the proposed values and click **wide** to see the matching products. The bundled demo runs offline with the Python standard library. On Windows, double-click **start-local.cmd** to generate and open the same page.
 
-| Stage | What the bundled example shows |
+Prefer a local server? Run `python -m src.pilon serve` and open **http://127.0.0.1:8472/**. The JSON result is available at **/api/report**.
+
+## From customer language to a usable filter
+
+| Exploration level | Result in the synthetic running-shoe example |
 | --- | --- |
-| Discovery | 34 customer signals mention toe room in September. A competitor review supplies additional vocabulary. |
-| Forecast | At September's rate, the next 30 days would bring 34 signals. Four of six products have an uncontested value in this snapshot. |
-| Induction | Propose **Toe box** with three observed values. Keep one conflicting product and one undocumented product for review. |
-| Usage | Preview **wide** on Pace 01 and Tempo 03. Export the candidate and product IDs for a merchandising decision. |
+| **Discovery** | 34 observed customer signals across search, chat, reviews and a feedback form point to toe room. A competitor review adds an external observation. |
+| **Forecast** | At September's rate, 68 matching signals would occur over 60 days. The default horizon is 30 days. |
+| **Induction** | Three observed values form the proposed vocabulary. Four of six products have an uncontested value. One listing needs more information and one product has conflicting sources. |
+| **Usage** | Preview the filter, inspect its evidence and hand the proposed product IDs to a merchandising or search pipeline. |
 
-All names and counts are synthetic. The forecast estimates signal volume under a constant-rate assumption. The filter's effect on sales would need a storefront experiment.
+The forecast projects signal volume under a constant-rate assumption. Commercial impact can be measured in a storefront experiment.
 
-## Use your own data
+## Bring your own data
 
-Install the CLI with `python -m pip install -e .`. Supply a category model and a
-feed of records. The channel name is yours. Search logs, support chats, feedback
-forms, store reviews, external reviews and product pages fit the same feed.
+Install from this checkout with `python -m pip install -e .`. A category snapshot lists current filters, optional aliases and the observation window. A CSV or JSONL feed supplies the records. Channel names come from your own systems.
 
 ```sh
-pilon discover --model model.json --signals signals.csv --output candidates.json
+pilon discover --model model.json --signals catalog.csv --signals feedback.jsonl --output candidates.json
+pilon serve --model model.json --signals signals.csv
 ```
 
-Use `--signals -` to stream JSONL from an existing job. Omit `--output` to return
-JSON on stdout. Add `--through discovery` for signals alone, `--horizon-days 60`
-for a different forecast window or `--html preview.html` for local review.
-The usage stage exports a preview for your PIM or search team to approve.
+Use `--signals -` for JSONL on stdin and omit `--output` to pipe the result downstream. Choose `--through discovery`, `forecast`, `induction` or `usage` to stop at the level your job needs.
 
-The built-in detector finds explicit specification labels present in product text
-and referenced in customer language. Existing filter names and configured aliases
-are checked after normalization. Free-form catalog text can use your own extractor
-through the Python interface. [Input contract and integration example](docs/use-case-ecommerce-filter-discovery.md)
+| Input role | Typical sources | Contribution |
+| --- | --- | --- |
+| Demand | Site searches, support chats, feedback forms, customer reviews | Observed local demand |
+| External | Competitor reviews, third-party feedback | Evidence of an interest to investigate |
+| Catalog | Product pages, PIM exports, merchant feeds | Evidence for a specific product and value |
 
-## Repository
+The built-in extractor reads labeled specifications such as `Toe box: wide`. The detector matches labels and optional phrases against feedback. For free-form product prose, pass a custom Python extractor or provide grounded annotations from an existing model job, including LangExtract. PILON verifies the supplied quotes and offsets. [Integration guide and CSV example](docs/use-case-ecommerce-filter-discovery.md)
 
-| Location | Use |
-| --- | --- |
-| [Commerce module](src/pilon/facets/) | Discovery stages, CLI adapters and standalone review page |
-| [Runnable example](src/pilon/facets/example/) | Editable category model and synthetic multichannel feed |
-| [Tests](tests/test_facets.py) | Replays, provenance, known filters, forecasts and conflicting sources |
-| [Ontology workbench](docs/ontology-workbench.md) | Earlier induction experiment, local viewer and optional provider adapter |
+## Develop and contribute
 
-For contributions, start with a small feed that reproduces a missed filter or an
-incorrect assignment. Include the expected result and the passage supporting it.
-[Contributing](CONTRIBUTING.md) · [License](LICENSE)
+- [Discovery engine and Python API](src/pilon/facets/) — feed an iterable of records from an existing job.
+- [Editable demo inputs](src/pilon/facets/example/) — change the catalog, signals or filter model and rerun.
+- [Contribution guide](CONTRIBUTING.md) · [Data handling](SECURITY.md) · [MIT license](LICENSE)
+- [Discovery levels and product direction](docs/discovery.md) — where the current workflow fits into an existing knowledge system.

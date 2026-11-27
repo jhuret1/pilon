@@ -1,42 +1,44 @@
-"""Read-only, loopback experiment viewer. Opening it never starts inference."""
-from pathlib import Path
-from flask import Flask, jsonify, send_from_directory, request, abort
-from .store import Store
-from .service import snapshot
+"""Read-only loopback viewer for a single discovery result."""
+import json
+from wsgiref.simple_server import make_server
+
+from .facets.report import render
 
 
-def create_app(db_path):
-    web = Path(__file__).with_name('web')
-    app = Flask(__name__, static_folder=str(web), static_url_path='/assets')
-    app.config.update(MAX_CONTENT_LENGTH=1024 * 1024)
-    store = Store(db_path)
+def create_app(report):
+    pages = {
+        "/": ("text/html; charset=utf-8", render(report).encode("utf-8")),
+        "/api/report": ("application/json", json.dumps(report, ensure_ascii=False).encode("utf-8")),
+    }
 
-    @app.before_request
-    def local_only():
-        if request.host.split(':')[0] not in ('localhost', '127.0.0.1'):
-            abort(403)
-
-    @app.after_request
-    def headers(response):
-        response.headers['Cache-Control'] = 'no-store'
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'"
-        return response
-
-    @app.get('/')
-    def index():
-        return send_from_directory(web, 'index.html')
-
-    @app.get('/api/runs')
-    def runs():
-        return jsonify([dict(id=r['id'], status=r['status'], provider=r['config']['provider'], processed=r['processed'])
-                        for r in store.runs()])
-
-    @app.get('/api/runs/<rid>')
-    def detail(rid):
-        try:
-            return jsonify(snapshot(store, rid))
-        except ValueError:
-            abort(404)
+    def app(environ, start_response):
+        path = environ.get("PATH_INFO", "/")
+        host = environ.get("HTTP_HOST", "").partition(":")[0].lower()
+        method = environ["REQUEST_METHOD"]
+        status = "200 OK"
+        mime, body = "text/plain", b""
+        if host not in {"localhost", "127.0.0.1"}:
+            status = "403 Forbidden"
+        elif method not in {"GET", "HEAD"}:
+            status = "405 Method Not Allowed"
+        elif path not in pages:
+            status = "404 Not Found"
+        else:
+            mime, body = pages[path]
+        headers = [
+            ("Content-Type", mime), ("Content-Length", str(len(body))),
+            ("Cache-Control", "no-store"), ("X-Content-Type-Options", "nosniff"),
+            ("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'"),
+        ]
+        if status.startswith("405"):
+            headers.append(("Allow", "GET, HEAD"))
+        start_response(status, headers)
+        return [b"" if method == "HEAD" else body]
 
     return app
+
+
+def serve_report(report, port):
+    with make_server("127.0.0.1", port, create_app(report)) as server:
+        print(f"PILON Discovery: http://127.0.0.1:{server.server_port}/", flush=True)
+        server.serve_forever()

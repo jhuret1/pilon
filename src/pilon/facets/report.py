@@ -7,7 +7,8 @@ def _e(value):
 
 
 def _sources(records):
-    return "".join(f"<li><b>{_e(r['source'])}</b> · {_e(r['text'])}</li>" for r in records)
+    return "".join(f"<li><b>{_e(r['source'])}</b> · {_e(r['text'])} "
+                   f"<small>{_e(r['id'])}</small></li>" for r in records)
 
 
 def _block(candidate):
@@ -42,10 +43,11 @@ def _block(candidate):
         if data["unknown_products"]:
             parts.append("<p>À renseigner · " + ", ".join(map(_e, data["unknown_products"])) + "</p>")
     if "usage" in c:
-        parts.append("<h3>Usage</h3><p>Aperçu du filtre par valeur</p>")
+        parts.append(f"<h3>Usage</h3><div class='tree'><b>{_e(c['label'])}</b><section>")
         for value, products in c["usage"]["product_ids_by_value"].items():
             parts.append(f"<details><summary>{_e(value)} <small>({len(products)})</small></summary>"
                          "<ul>" + "".join(f"<li>{_e(p)}</li>" for p in products) + "</ul></details>")
+        parts.append("</section></div>")
     return "".join(parts) + "</article>"
 
 
@@ -59,6 +61,7 @@ main{max-width:820px;margin:auto;padding:36px 20px}header{color:#536080}h1{font-
 article{background:#fff;border:1px solid #dee2ea;border-radius:14px;padding:clamp(16px,4vw,32px);margin:20px 0}
 h2{margin:0}h3{margin:1.5em 0 .3em;color:#354f7a}p{margin:.3em 0 .75em}small{color:#5a6476}
 summary{cursor:pointer;padding:.45em 0}ul{padding-left:1.5em}li{margin:.45em 0}q{white-space:pre-wrap}
+.tree{display:flex;align-items:center;gap:18px;overflow-wrap:anywhere}.tree>b{background:#233a59;border-radius:6px;color:white;padding:.35em .8em}.tree section{border-left:2px solid #aec4cc;padding-left:16px}.tree details{position:relative}.tree details:before{content:"";position:absolute;top:1.2em;left:-16px;width:12px;border-top:2px solid #aec4cc}.tree summary{font-weight:600;color:#315d65}
 </style><main><header>PILON / Catalogue</header><h1>Filtres proposés</h1>""" + (
         ("<small>Démonstration · données fictives</small>" if report.get("synthetic") else "") +
         f"<p>{_e(report['category'])} · {report['inventory_products']} produits · "

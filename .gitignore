@@ -8,11 +8,8 @@ build/
 dist/
 .env
 .env.*
-!.env.example
 runtime/
 data/
-!src/pilon/data/
-!src/pilon/data/*.json
 *.sqlite*
 *.parquet
 *.npz
