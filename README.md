@@ -100,7 +100,9 @@ pilon loop report JOB_ID --html runtime/loop-report.html
 pilon loop serve
 ```
 
-Replace `JOB_ID` with the identifier returned by enqueue. `work --once` processes a queued job through projection. Add `--job JOB_ID` to target a job. Repeat `--signals` to combine exports. `report` exports its review page and accepts `--output` for a JSON file. `serve` opens a read-only local viewer at **http://127.0.0.1:8473/** and does not start jobs or publish models. Failed jobs can be explicitly queued again with `pilon loop retry JOB_ID` to resume from their checkpoints.
+Replace `JOB_ID` with the identifier returned by enqueue. `work --once` processes a queued job through projection. Add `--job JOB_ID` to target a job. Repeat `--signals` to combine exports. `report` exports its review page and accepts `--output` for a JSON file. `serve` opens the read-only **PILON Benchmark** workspace at **http://127.0.0.1:8473/** and does not start jobs or publish models. Failed jobs can be explicitly queued again with `pilon loop retry JOB_ID` to resume from their checkpoints.
+
+Benchmark has its own overview, opportunity table, demand sources, model reference and history. Search and filter opportunities, inspect exact customer quotations, and export the filtered results. Extract and Ingest remain separate products. The complete loop report is still available at `/report`. [Workspace and design system](docs/benchmark-workspace.md)
 
 ### Revisit retained demand when new evidence arrives
 

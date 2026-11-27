@@ -2,6 +2,7 @@
 import json
 from wsgiref.simple_server import make_server
 from .report import render_loop
+from .benchmark_ui import render_benchmark
 from .worker import report
 
 
@@ -20,12 +21,20 @@ def create_app(queue):
                 mime='application/json';body=json.dumps(queue.jobs(),ensure_ascii=False).encode()
             elif path.startswith('/api/jobs/'):
                 mime='application/json';body=json.dumps(report(queue,path[len('/api/jobs/'):]),ensure_ascii=False).encode()
+            elif path=='/report' or path.startswith('/reports/'):
+                jobs=queue.jobs()
+                jid=path[len('/reports/'):] if path.startswith('/reports/') else (jobs[0]['id'] if jobs else None)
+                snapshot=report(queue,jid) if jid else {}
+                mime='text/html; charset=utf-8';body=render_loop(snapshot).encode()
             elif path=='/' or path.startswith('/jobs/'):
                 jobs=queue.jobs()
                 jid=path[len('/jobs/'):] if path.startswith('/jobs/') else (jobs[0]['id'] if jobs else None)
                 snapshot=report(queue,jid) if jid else dict(status='empty',candidates=[],extractions=[],projection=None,metrics={},events=[])
                 snapshot['jobs']=jobs
-                mime='text/html; charset=utf-8';body=render_loop(snapshot).encode()
+                payload=queue.get(jid)['payload'] if jid else {}
+                checkpoint=queue.checkpoint(jid,'benchmark') if jid else None
+                mime='text/html; charset=utf-8';body=render_benchmark(snapshot,records=payload.get('records'),
+                    benchmark=checkpoint['data'] if checkpoint else None).encode()
             else:
                 status='404 Not Found'
         except ValueError:

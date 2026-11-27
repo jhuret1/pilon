@@ -27,7 +27,7 @@ pilon = "pilon.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-pilon = ["facets/example/*.json", "facets/example/*.jsonl"]
+pilon = ["facets/example/*.json", "facets/example/*.jsonl", "loop/ui/*.html", "loop/ui/*.css", "loop/ui/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
