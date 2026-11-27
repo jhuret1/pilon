@@ -87,6 +87,15 @@ def run_once(queue, *, job_id=None, lease_seconds=60, hooks=None):
         bp = stage('benchmark',dict(model=model,records=records),
                    lambda: hooks.get('benchmark',benchmark)(model,records))
         candidates, extractions, geometries = bp['candidates'], [], []
+        if options.get('through') == 'benchmark' or model.get('assessment_scope') == 'schema_only':
+            result = dict(schema_version=1,id=jid,model=model,candidates=candidates,benchmark=bp,
+                          extractions=[],geometry=[],projection=None,synthetic=payload['synthetic'],
+                          producer=dict(version=__version__,engine=ENGINE_VERSION),
+                          metrics=dict(benchmark=bp['metrics'],elapsed_seconds=time.perf_counter()-started,
+                                       reused_stages=reused,llm_calls=0,api_cost_usd=0,
+                                       provider='imported_agent_decisions' if bp.get('analysis') else 'local_baseline'))
+            queue.finish(jid,owner,result,stage='benchmark')
+            return report(queue,jid)
         catalog = [r for r in records if r.get('role')=='catalog' and r.get('category')==model['category']]
         for c in candidates:
             if c['gap_type'] in ('unresolved_intent','retrieval_gap'):

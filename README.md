@@ -104,6 +104,31 @@ Replace `JOB_ID` with the identifier returned by enqueue. `work --once` processe
 
 Benchmark has its own overview, opportunity table, demand sources, model reference and history. Search and filter opportunities, inspect exact customer quotations, and export the filtered results. Extract and Ingest remain separate products. The complete loop report is still available at `/report`. [Workspace and design system](docs/benchmark-workspace.md)
 
+### Real requests against an observed model: WANDS
+
+```sh
+pilon benchmark wands
+pilon loop serve
+```
+
+This optional import downloads the public [WANDS dataset](https://github.com/wayfair/WANDS) at a pinned revision. It retains **480 sampled customer queries** and reconstructs attribute names, their observed values and category scopes. Product rows are streamed and discarded: no product descriptions, IDs, individual assignments, query/product associations or relevance labels are exported. The data and MIT attribution remain under ignored `runtime/wands/`, outside the source distribution.
+
+WANDS does not provide an official business schema, query dates or traffic frequencies. The reconstructed model is an observed vocabulary, not an exhaustive allowed-value contract. A value absent from this sample may be a synonym, valid but unobserved, or genuinely missing. Attribute/value domains remain scoped to product categories; the query and product category taxonomies are not automatically equated.
+
+This command runs **Benchmark only**, with no paid API calls. The lexical baseline keeps unrecognized requests for interpretation; it does not label them missing attributes. Grounded intent adapters may supply a requested value and its exact source span: comparison distinguishes observed values from literal gaps requiring confirmation. Product coverage and retrieval performance are not assessed in this mode. Extract and Ingest do not run.
+
+Use `--import-only` to prepare the inputs without a run, or `--db PATH` to select a queue (use the same path for `loop serve`). Re-running the import verifies file hashes and reuses the local files without downloading again. A different source revision or import format requires a new `--output-dir`.
+
+To replay a semantic review prepared by an agent or another annotation process:
+
+```sh
+pilon benchmark review --reviews reviewed-demands.json
+```
+
+The decision file contains `model_hash`, `records_hash` (the SHA-256 fingerprints produced by `pilon.loop.store.fingerprint`) and a `reviews` array. Every demand requires an interpretation and grounded criteria: exact `quote`, `start`, `end`, a rationale, and an assessment (`represented`, `attribute_gap`, `value_gap`, `filter_proposal`, or `unresolved`). Attribute keys, observed values and category references must exist in the frozen model. A changed model, incomplete pass or invalid quotation blocks import. The code contract is in `src/pilon/loop/semantic.py`.
+
+For example, “desk for kids” can support a suggested audience filter backed by an existing **Kids Desks** category. This is distinct from missing product information. The actual storefront filter configuration is unknown. Imported agent decisions are inspectable proposals, not an independent accuracy measurement or automatically published changes. This command replays supplied decisions; it does not invoke an LLM or provide an automated annotation service.
+
 ### Revisit retained demand when new evidence arrives
 
 Add a new source to an earlier job without sending its demand records again:

@@ -31,10 +31,15 @@ def main(argv=None):
     loop = sub.add_parser("loop", help="Benchmark → Extract → Ingest background jobs")
     from .loop.commands import configure, execute as execute_loop
     configure(loop)
+    bench = sub.add_parser('benchmark', help='Compare customer requests to a data model')
+    from .wands import configure as configure_benchmark, execute as execute_benchmark
+    configure_benchmark(bench)
     argv = sys.argv[1:] if argv is None else argv
     args = parser.parse_args(argv or ["demo"])
     try:
-        if args.command == "loop":
+        if args.command == "benchmark":
+            execute_benchmark(args)
+        elif args.command == "loop":
             execute_loop(args)
         elif args.command == "serve":
             from .app import serve_report

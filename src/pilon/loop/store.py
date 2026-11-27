@@ -170,11 +170,13 @@ class Queue:
             db.execute("UPDATE jobs SET stage=?,updated=? WHERE id=?",(stage,time.time(),jid))
             self._event(db,jid,'stage_reused' if cache_hit else 'stage_completed',dict(stage=stage,output_hash=output_hash))
 
-    def finish(self, jid, owner, result):
+    def finish(self, jid, owner, result, *, stage='projection'):
+        if stage not in ('benchmark', 'projection'):
+            raise ValueError('Invalid final stage')
         with self.db() as db:
             self._fence(db,jid,owner)
-            db.execute("UPDATE jobs SET status='completed',stage='projection',result=?,updated=?,owner=NULL,lease_until=NULL WHERE id=?",
-                       (canonical(result),time.time(),jid))
+            db.execute("UPDATE jobs SET status='completed',stage=?,result=?,updated=?,owner=NULL,lease_until=NULL WHERE id=?",
+                       (stage,canonical(result),time.time(),jid))
             self._event(db,jid,'completed',dict(published=False))
 
     def fail(self, jid, owner, error, *, retryable=False):

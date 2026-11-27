@@ -323,3 +323,188 @@ def test_script_injection_is_inert_and_json_round_trips_exact_source_text(attack
     assert data["demands"][0]["text"] == attack
     assert data["demands"][0]["source"] == attack
     assert data["jobs"][0]["id"] == attack
+
+
+@pytest.fixture
+def schema_snapshot():
+    values = [f"shade {i:03}" for i in range(60)]
+    scopes = ["Chairs", "Tables", "Beds", "Sofas", "Desks"]
+    facet = dict(key="colour", label="Colour", scopes=scopes, values=values,
+                 value_scopes={value: scopes if i % 2 == 0 else ["Chairs"]
+                               for i, value in enumerate(values)},
+                 values_status="observed_not_exhaustive", schema_source="observed_attribute_names_and_values")
+    model = dict(category="WANDS", assessment_scope="schema_only", observation_period="unknown",
+                 demand_unit="sampled_queries", categories=scopes, facets=[facet],
+                 window_start="2000-01-01", window_end="2000-01-02",
+                 provenance=dict(version="published-test", urls=["https://example.invalid/dataset"]))
+    records = [dict(id=f"q{i}", role="demand", category="WANDS", query_class="Seating queries",
+                    text=text, count=1, source="wands") for i, text in enumerate([
+                        "Colour shade 000 with an unfamiliar extra constraint",
+                        "Colour ultraviolet for a quiet room",
+                        "Something unfamiliar for my home",
+                    ])]
+    def proof(i):
+        return dict(record_id=f"q{i}", source="wands", quote=records[i]["text"],
+                    start=0, end=len(records[i]["text"]), count=1)
+    candidates = [dict(key="unknown", label="Intention à qualifier", gap_type="unresolved_intent",
+                       demand_records=[proof(2)], demand_events=1),
+                  dict(key="colour__value_test", fact_key="colour", label="Colour", gap_type="value_gap",
+                       requested_value="ultraviolet", value_status="not_observed_exact",
+                       demand_records=[proof(1)], demand_events=1, value_evidence=proof(1))]
+    represented = [dict(record_id="q0", fact_key="colour", label="Colour", status="schema_represented",
+                        value_status="observed_exact", requested_value="shade 000", evidence=proof(0),
+                        value_evidence=proof(0))]
+    bp = dict(candidates=candidates, already_represented=represented, metrics=dict(inventory_products=999))
+    return make_report(model, bp, synthetic=False), records, bp
+
+
+def test_schema_undated_demands_and_observed_values_are_preserved(schema_snapshot):
+    report, records, bp = schema_snapshot
+    original = deepcopy(schema_snapshot)
+    excluded = [dict(records[0], id="catalog", role="catalog", product_id="not-in-scope"),
+                dict(records[0], id="other", category="other-corpus")]
+    view = build_view(report, records=records + excluded, benchmark=bp)
+    assert [r["id"] for r in view["demands"]] == ["q0", "q1", "q2"]
+    assert view["summary"]["demand_records"] == 3
+    assert view["summary"]["inventory_products"] is None
+    assert view["metrics"]["inventory_products"] is None
+    assert all("date" not in r for r in view["demands"])
+    assert view["model"] == report["model"]
+    assert view["attributes"] == report["model"]["facets"]
+    assert view["demands"][0]["represented"] == bp["already_represented"]
+    assert view["demands"][0]["represented"][0]["status"] == "schema_represented"
+    assert view["demands"][0]["text"] == records[0]["text"]
+    view["demands"][0]["represented"][0]["value_status"] = "changed"
+    view["attributes"][0]["values"].append("changed")
+    assert schema_snapshot == original
+
+
+def test_schema_report_only_retains_represented_evidence_without_fabricating_queries(schema_snapshot):
+    report, _, bp = schema_snapshot
+    view = build_view(report, benchmark=bp)
+    represented = next(r for r in view["demands"] if r["id"] == "q0")
+    assert represented["excerpt_only"] is True
+    assert represented["text"] == bp["already_represented"][0]["evidence"]["quote"]
+    assert represented["matches"] == []
+    bp["already_represented"][0].pop("evidence")
+    missing = next(r for r in build_view(report, benchmark=bp)["demands"] if r["id"] == "q0")
+    assert missing["text"] == ""
+    assert build_view(report, records=[], benchmark=bp)["demands"] == []
+
+
+def test_schema_render_serializes_the_frozen_model_once_and_exposes_analysis(schema_snapshot):
+    report, records, bp = schema_snapshot
+    bp["analysis"] = dict(method="agent_semantic_review", status="reviewed", reviewed_records=3,
+                          provider="codex_agents", api_cost_usd=0)
+    attack = '</script><img src=x onerror="alert(1)">'
+    report["model"]["facets"][0]["values"].append(attack)
+    markup = render_benchmark(report, records=records, benchmark=bp)
+    data = Page(markup).data()
+    assert "attributes" not in data  # UI reads model.facets without a second 126k-value payload.
+    assert data["model"] == report["model"]
+    assert data["analysis"] == bp["analysis"]
+    assert attack not in markup
+    assert not any(tag == "img" for tag, _ in Page(markup).tags)
+    data["attributes"] = data["model"]["facets"]
+    assert data == build_view(report, records=records, benchmark=bp)
+
+
+def test_schema_categories_are_not_used_to_filter_query_classes(schema_snapshot):
+    report, records, bp = schema_snapshot
+    report["model"].pop("category")
+    assert len(build_view(report, records=records, benchmark=bp)["demands"]) == 3
+    assert records[0]["query_class"] not in report["model"]["categories"]
+
+
+@pytest.mark.parametrize("semantic", [False, True], ids=["lexical", "agent-review"])
+def test_schema_browser_pagination_values_and_honest_status(schema_snapshot, semantic):
+    """Optional real-browser regression; no server or external requests are needed."""
+    import os
+    import subprocess
+
+    node = os.environ.get("PILON_UI_NODE")
+    if not node:
+        pytest.skip("Set PILON_UI_NODE to a Node 20+ runtime with local Playwright to run browser checks")
+    report, records, bp = schema_snapshot
+    if semantic:
+        bp["analysis"] = dict(method="agent_semantic_review", status="reviewed", reviewed_records=3,
+                              reviewed_criteria=4, independent_audit=False, execution="imported_agent_decisions")
+        bp["already_represented"][0].update(value_status="observed_semantic", matched_value="shade 000",
+                                           rationale="Proposed rationale", category_refs=["Chairs"])
+        bp["candidates"].append(dict(key="filter-test", label="Colour filter", fact_key="colour",
+                                     gap_type="filter_proposal", definition="Propose filtering on represented data",
+                                     demand_events=1, demand_records=[], filter_availability="not_provided"))
+    for i in range(51):
+        report["model"]["facets"].append(dict(key=f"attr{i}", label=f"Attribute {i}", scopes=["Beds"], values=[]))
+    markup = render_benchmark(report, records=records, benchmark=bp)
+    driver = r"""
+const {chromium}=require('playwright'), assert=require('node:assert/strict');
+(async()=>{
+  const html=require('node:fs').readFileSync(0,'utf8');
+  const browser=await chromium.launch({headless:true,executablePath:process.env.PILON_UI_BROWSER||undefined});
+  try {
+    const page=await browser.newPage(), errors=[], requests=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.route('**/*',route=>{requests.push(route.request().url());return route.abort();});
+    await page.goto('about:blank#overview');await page.setContent(html);
+    const semantic=await page.locator('#benchmark-data').evaluate(el=>JSON.parse(el.textContent).analysis?.method==='agent_semantic_review');
+    assert.match(await page.locator('#snapshot-state').innerText(),semantic?/Revue sémantique fournie/:/analyse sémantique non effectuée/);
+    if(semantic)assert.doesNotMatch(await page.locator('#scope-notice').innerText(),/Détection lexicale/);
+    assert.match(await page.locator('.metrics').innerText(),/Requêtes du corpus[\s\S]*Requêtes non interprétées/);
+    assert.equal(await page.locator('.coverage-col').count(),0);
+    assert.doesNotMatch(await page.locator('#content').innerText(),/événements|produits dans le périmètre|Couverture incomplète/);
+    await page.locator('#navigation a[href="#opportunities"]').click();
+    await page.locator('.filter-tabs').waitFor();
+    assert.match(await page.locator('.opportunity-table').innerText(),/Something unfamiliar for my home/);
+    assert.match(await page.locator('.opportunity-table').innerText(),/Valeur non observée · à confirmer/);
+    if(semantic){
+      await page.locator('[data-candidate="filter-test"]').first().click();
+      assert.match(await page.locator('#inspector-content').innerText(),/disponibilité du filtre dans le service réel est inconnue/);
+      await page.locator('#close-inspector').click();
+    }
+    await page.locator('#navigation a[href="#demands"]').click();
+    await page.locator('.demand-table').waitFor();
+    assert.equal(await page.locator('.date-col').count(),0);
+    assert.match(await page.locator('.demand-table').innerText(),/extra constraint/);
+    assert.match(await page.locator('.demand-table').innerText(),semantic?/rapprochement proposé par la revue/:/correspondance lexicale candidate/);
+    if(semantic){
+      await page.locator('[data-demand="q0"]').click();
+      assert.match(await page.locator('#inspector-content').innerText(),/Proposed rationale/);
+      assert.match(await page.locator('#inspector-content').innerText(),/Valeur du modèle : shade 000/);
+      await page.locator('#close-inspector').click();
+    }
+    await page.locator('#category-filter').selectOption('Seating queries');
+    assert.equal(await page.locator('.demand-table tbody tr').count(),3);
+    await page.locator('#navigation a[href="#model"]').click();
+    await page.locator('.attribute-table').waitFor();
+    assert.equal(await page.locator('.attribute-table tbody tr').count(),25);
+    await page.getByRole('button',{name:'Page suivante',exact:true}).click();
+    assert.equal(await page.locator('.attribute-table tbody tr').count(),25);
+    await page.locator('#search').fill('shade 059');
+    assert.equal(await page.locator('.attribute-table tbody tr').count(),1);
+    await page.locator('[data-facet="colour"]').first().click();
+    assert.equal(await page.locator('.value-table tbody tr').count(),25);
+    assert.equal(await page.locator('.scope-details[open]').count(),0);
+    assert.equal((await page.locator('.value-table tbody tr').first().innerText()).includes('Desks'),false);
+    await page.locator('.scope-details summary').first().click();
+    assert.match(await page.locator('.value-table tbody tr').first().innerText(),/Desks/);
+    await page.getByRole('button',{name:'Valeurs suivantes',exact:true}).click();
+    assert.match(await page.locator('.value-table tbody tr').first().innerText(),/shade 025/);
+    await page.locator('#value-search').fill('shade 059');
+    assert.equal(await page.locator('.value-table tbody tr').count(),1);
+    await page.locator('#value-category-filter').selectOption('Tables');
+    assert.equal(await page.locator('.value-table tbody tr').count(),0);
+    await page.locator('#close-inspector').click();
+    await page.evaluate(()=>{const create=URL.createObjectURL;URL.createObjectURL=blob=>{window.exportedBlob=blob;return create(blob);};HTMLAnchorElement.prototype.click=function(){};});
+    await page.locator('#export').click();
+    const output=await page.evaluate(()=>window.exportedBlob.text());
+    const original=await page.locator('#benchmark-data').evaluate(el=>JSON.parse(el.textContent).model);
+    assert.deepEqual(JSON.parse(output),original);
+    assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);
+    console.log('Browser checks passed: bounded facets/values, filters, full queries, lexical state, exact model export, no requests.');
+  } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
+"""
+    result = subprocess.run([node, "-e", driver], input=markup, text=True, encoding="utf-8",
+                            capture_output=True, timeout=60)
+    assert result.returncode == 0, result.stdout + result.stderr
