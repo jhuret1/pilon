@@ -127,7 +127,7 @@ def reviewed_benchmark(model, records):
                 known_assignment_count=None, demand_records=[], demand_events=0,
                 filter_availability='not_provided',
                 value_status='not_observed_semantic' if state=='value_gap' else
-                    ('observed_semantic' if c.get('matched_value') is not None else 'represented_by_category' if c.get('category_refs') else 'attribute_represented')
+                    ('observed_semantic' if c.get('matched_value') is not None else 'attribute_represented' if c.get('fact_key') else 'represented_by_category')
                     if state=='filter_proposal' else 'not_assessed'))
             candidate['demand_records'].append(proof)
             candidate['demand_events'] += row.get('count',1)
