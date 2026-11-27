@@ -56,6 +56,8 @@
 .product-detail .recommendation-action h3{font-size:17px;font-weight:550;line-height:1.5;margin-bottom:15px}
 .product-detail .recommendation-action .tags{margin-bottom:0}
 .product-detail .recommendation-action .tag{background:white;font-size:14px;padding:6px 10px}
+.product-detail .recommendation-action.covered-action{background:#f1f8f5;border-color:#dcece4}
+.product-detail .demand-recommendations{margin-bottom:24px}
 .available-data{display:grid;grid-template-columns:1fr auto;gap:5px 15px;font-size:13px;margin:0 0 28px;padding-bottom:19px;border-bottom:1px solid var(--line)}
 .available-data>span{color:var(--muted)}
 .available-data>small{grid-column:1/-1}

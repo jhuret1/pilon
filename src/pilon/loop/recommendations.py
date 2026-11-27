@@ -48,13 +48,13 @@ def _scoped_sources(entry, proofs, query_categories):
 
 def _new_item(identity, basis, fact_key, refs):
     return dict(id=sha256(canonical(identity).encode()).hexdigest()[:24],
-                label='', category_refs=list(refs), values=[], fact_key=fact_key,
+                label='', category_refs=list(refs), values=[], requested_values=[], fact_key=fact_key,
                 basis=basis, record_ids=[], demand_count=0, proofs=[], rationales=[],
                 candidate_keys=[], model_values=[], filter_availability='not_provided')
 
 
 def build_recommendations(model, demands, candidates, represented):
-    """Return deterministic filter, exploration and unresolved recommendation lists.
+    """Separate proposed filters, exploration, covered needs and unresolved needs.
 
     Existing attributes group by their exact model key and category scope. Derived
     filters additionally require the same proposal key; exploration groups keep
@@ -72,14 +72,23 @@ def build_recommendations(model, demands, candidates, represented):
     # Conflicting source rows cannot establish one exact fallback scope.
     query_categories = {rid: tuple(sorted(refs)) if len(refs) == 1 else ()
                         for rid, refs in query_categories.items()}
-    groups = dict(filters={}, explore={}, uncertain={})
+    groups = dict(filters={}, explore={}, covered={}, uncertain={})
     labels = {}
 
     def add(section, identity, entry, basis, fact_key, refs, ids, proofs, candidate=False):
         item = groups[section].setdefault(identity, _new_item(identity, basis, fact_key, refs))
         label = entry.get('label') or facets.get(fact_key, {}).get('label') or fact_key or entry.get('key') or ''
         labels.setdefault(item['id'], Counter())[label] += 1
-        item['values'].extend(_strings([entry.get('requested_value')]))
+        requested = entry.get('requested_value')
+        matched = entry.get('matched_value')
+        item['requested_values'].extend(_strings([requested]))
+        # Reuse only the supplied match to an exact observed value. Do not infer
+        # synonym/case equivalence; the original wording stays in requested_values
+        # and in its source quotation. Derived filters retain their proposed value.
+        observed = facets.get(fact_key, {}).get('values') or []
+        display_value = (matched if basis == 'existing_attribute' and matched in observed
+                         and isinstance(matched, str) else requested)
+        item['values'].extend(_strings([display_value]))
         item['record_ids'].extend(ids)
         item['proofs'].extend(deepcopy(proofs))
         item['rationales'].extend(_strings([entry.get('rationale') or entry.get('definition'),
@@ -95,7 +104,9 @@ def build_recommendations(model, demands, candidates, represented):
             continue
         for refs, ids, proofs in _scoped_sources(entry, _proofs(entry), query_categories):
             identity = ('existing_attribute', fact_key, refs)
-            add('filters', identity, entry, 'existing_attribute', fact_key, refs, ids, proofs)
+            # A represented criterion is coverage, not an opportunity to add a
+            # filter. Storefront filter availability cannot be inferred either.
+            add('covered', identity, entry, 'existing_attribute', fact_key, refs, ids, proofs)
 
     for entry in _entries(candidates):
         gap = entry.get('gap_type')
@@ -122,7 +133,7 @@ def build_recommendations(model, demands, candidates, represented):
     for section, items in groups.items():
         for item in items.values():
             item['label'] = min(labels[item['id']], key=lambda label: (-labels[item['id']][label], label))
-            for field in ('values', 'record_ids', 'rationales', 'candidate_keys', 'model_values'):
+            for field in ('values', 'requested_values', 'record_ids', 'rationales', 'candidate_keys', 'model_values'):
                 item[field] = _strings(item[field])
             item['demand_count'] = len(item['record_ids'])
             item['proofs'].sort(key=canonical)

@@ -8,7 +8,7 @@ from pilon.loop.recommendations import build_recommendations
 
 
 ITEM_FIELDS = {'id', 'label', 'category_refs', 'values', 'fact_key', 'basis',
-               'record_ids', 'demand_count', 'proofs', 'rationales', 'candidate_keys',
+               'requested_values', 'record_ids', 'demand_count', 'proofs', 'rationales', 'candidate_keys',
                'model_values', 'filter_availability'}
 
 
@@ -45,17 +45,18 @@ def test_exact_contract_and_detached_immutable_inputs(model):
     before = deepcopy(inputs)
     result = build_recommendations(*inputs)
     assert inputs == before
-    assert set(result) == {'filters', 'explore', 'uncertain', 'categories', 'counts'}
-    assert result['counts'] == dict(filters=2, explore=0, uncertain=0, uncertain_requests=0)
-    for item in result['filters']:
+    assert set(result) == {'filters', 'explore', 'covered', 'uncertain', 'categories', 'counts'}
+    assert result['counts'] == dict(filters=1, explore=0, covered=1, uncertain=0, uncertain_requests=0)
+    for item in result['filters'] + result['covered']:
         assert set(item) == ITEM_FIELDS
         assert item['filter_availability'] == 'not_provided'
         assert item['demand_count'] == 1
         assert item['category_refs'] == ['Beds']  # entry refs outrank query class
-    item = next(i for i in result['filters'] if i['basis'] == 'existing_attribute')
+    item = result['covered'][0]
     assert item['proofs'] == [direct[0]['evidence']]
     assert item['model_values'] == ['white']
-    assert item['values'] == ['blanc']
+    assert item['values'] == ['white']
+    assert item['requested_values'] == ['blanc']
     item['proofs'][0]['refs']['document'].append('changed')
     item['category_refs'].append('changed')
     assert inputs == before
@@ -64,10 +65,11 @@ def test_exact_contract_and_detached_immutable_inputs(model):
 def test_direct_values_proofs_and_unique_queries_aggregate_with_semantic_label(model):
     entries = [represented(label='Teinte'), represented('q2', label='Couleur', requested_value='rouge', matched_value='red'),
                represented(label='Couleur'), represented('q3', label='Couleur', requested_value='blanc')]
-    item, = build_recommendations(model, [], [], entries)['filters']
+    item, = build_recommendations(model, [], [], entries)['covered']
     assert item['label'] == 'Couleur'
     assert item['record_ids'] == ['q1', 'q2', 'q3'] and item['demand_count'] == 3
-    assert item['values'] == ['blanc', 'rouge']
+    assert item['values'] == ['red', 'white']
+    assert item['requested_values'] == ['blanc', 'rouge']
     assert item['model_values'] == ['red', 'white']
     assert len(item['proofs']) == 4  # repeated proof survives; request counted once
     assert item['candidate_keys'] == []
@@ -80,9 +82,9 @@ def test_exact_sorted_scopes_are_separate_and_unknown_is_not_inferred(model):
                represented(category_refs=[]), represented('q2', category_refs=[]),
                represented('q3', category_refs=['Beds'])]
     result = build_recommendations(model, rows, [], entries)
-    by_scope = {tuple(i['category_refs']): i for i in result['filters']}
+    by_scope = {tuple(i['category_refs']): i for i in result['covered']}
     assert set(by_scope) == {('Beds', 'Desks'), ('Desks',), (), ('Beds',)}
-    assert by_scope[('Beds', 'Desks')]['values'] == ['blanc', 'rouge']
+    assert by_scope[('Beds', 'Desks')]['requested_values'] == ['blanc', 'rouge']
     assert by_scope[()]['record_ids'] == ['q2']
     assert result['categories'] == ['Beds', 'Desks']
 
@@ -97,7 +99,7 @@ def test_candidate_fallbacks_keep_separate_query_scopes(model):
 
 def test_category_only_represented_is_not_a_filter(model):
     entries = [represented(fact_key=None, label='Type de meuble'), represented(fact_key='not_a_model_key')]
-    assert build_recommendations(model, [], [], entries)['filters'] == []
+    assert build_recommendations(model, [], [], entries)['covered'] == []
     c = candidate(fact_key=None, proposed_key='audience', label='Public')
     item, = build_recommendations(model, [], [c], entries)['filters']
     assert item['basis'] == 'derived_filter' and item['fact_key'] is None
@@ -109,10 +111,11 @@ def test_derived_filters_keep_proposal_fact_and_scope_separate_from_raw_height(m
                   candidate('c3', proposed_key='adjustable_height'), candidate('c4', fact_key='color'),
                   candidate('c5', category_refs=['Desks']), candidate('c6', proposed_key=None),
                   candidate('c7', proposed_key=None)]
-    items = build_recommendations(model, [], candidates, direct)['filters']
-    assert len(items) == 7
-    raw, = [i for i in items if i['basis'] == 'existing_attribute']
-    assert raw['values'] == ['20 pouces'] and raw['candidate_keys'] == []
+    result = build_recommendations(model, [], candidates, direct)
+    items = result['filters']
+    assert len(items) == 6
+    raw, = result['covered']
+    assert raw['values'] == ['20 in'] and raw['candidate_keys'] == []
     low, = [i for i in items if i['candidate_keys'] == ['c1', 'c2']]
     assert low['values'] == ['bas', 'très bas'] and low['demand_count'] == 2
 
@@ -137,7 +140,7 @@ def test_unresolved_candidates_stay_individual_with_unique_request_count(model):
     cs = [candidate('u1', 'unresolved_intent'), candidate('u2', 'unresolved_intent'),
           candidate('u3', 'unresolved_intent', demand_records=[proof('q1'), proof('q2')])]
     result = build_recommendations(model, [], cs, [])
-    assert result['counts'] == dict(filters=0, explore=0, uncertain=3, uncertain_requests=2)
+    assert result['counts'] == dict(filters=0, explore=0, covered=0, uncertain=3, uncertain_requests=2)
     assert all(i['basis'] == 'unresolved' and len(i['candidate_keys']) == 1 for i in result['uncertain'])
     original_id = next(i['id'] for i in result['uncertain'] if i['candidate_keys'] == ['u1'])
     cs[0].update(label='Changed label', category_refs=['Desks'], requested_value='other')
@@ -152,22 +155,59 @@ def test_order_independence_label_ties_and_stable_group_ids(model):
     for c in cs:
         c['demand_records'].reverse()
     assert build_recommendations(model, [], cs, direct[::-1]) == before
-    raw = next(i for i in before['filters'] if i['basis'] == 'existing_attribute')
+    raw = before['covered'][0]
     assert raw['label'] == 'Couleur'
     direct.append(represented('q3', requested_value='nouveau'))
-    assert next(i for i in build_recommendations(model, [], [], direct)['filters']
+    assert next(i for i in build_recommendations(model, [], [], direct)['covered']
                 if i['basis'] == 'existing_attribute')['id'] == raw['id']
 
 
 def test_empty_and_no_evidence_do_not_invent_sources_or_counts(model):
-    assert build_recommendations({}, [], [], []) == dict(filters=[], explore=[], uncertain=[], categories=[],
-        counts=dict(filters=0, explore=0, uncertain=0, uncertain_requests=0))
+    assert build_recommendations({}, [], [], []) == dict(filters=[], explore=[], covered=[], uncertain=[], categories=[],
+        counts=dict(filters=0, explore=0, covered=0, uncertain=0, uncertain_requests=0))
     c = candidate(demand_records=[], category_refs=[], matched_value=None)
     item, = build_recommendations(model, [], [c], [])['filters']
     assert item['proofs'] == item['record_ids'] == item['category_refs'] == item['model_values'] == []
     assert item['demand_count'] == 0
-    item, = build_recommendations(model, [], [], [represented(evidence=None)])['filters']
+    item, = build_recommendations(model, [], [], [represented(evidence=None)])['covered']
     assert item['record_ids'] == ['q1'] and item['demand_count'] == 1 and item['proofs'] == []
+
+
+def test_existing_bed_sizes_are_covered_not_recommended_with_catalog_values(model):
+    model['facets'].append(dict(key='bedsize', values=['full', 'king', 'queen'], scopes=['Beds']))
+    entries = [represented(f'q{i}', fact_key='bedsize', label='Taille de couchage',
+                           requested_value=value, matched_value=value.lower(),
+                           evidence=proof(f'q{i}', quote=value))
+               for i, value in enumerate(['Full', 'Queen', 'full', 'king', 'queen'])]
+    original = deepcopy(entries)
+    result = build_recommendations(model, [], [], entries)
+    assert result['filters'] == [] and result['explore'] == []
+    covered, = result['covered']
+    assert covered['values'] == ['full', 'king', 'queen']
+    assert covered['requested_values'] == ['Full', 'Queen', 'full', 'king', 'queen']
+    assert covered['demand_count'] == 5 and len(covered['proofs']) == 5
+    assert {p['quote'] for p in covered['proofs']} == set(covered['requested_values'])
+    assert entries == original
+    assert covered['filter_availability'] == 'not_provided'  # no storefront claim
+    assert result['counts']['filters'] == 0 and result['counts']['covered'] == 1
+
+
+def test_existing_attribute_does_not_hide_new_value_or_derived_filter(model):
+    cs = [candidate('novel', 'value_gap', fact_key='color', requested_value='ultraviolet'), candidate()]
+    result = build_recommendations(model, [], cs, [represented()])
+    assert result['covered'][0]['fact_key'] == 'color'
+    assert result['explore'][0]['values'] == ['ultraviolet']
+    assert result['filters'][0]['values'] == ['bas']
+    assert result['filters'][0]['basis'] == 'derived_filter'
+    assert result['filters'][0]['candidate_keys'] == ['c1']
+
+
+def test_value_display_does_not_invent_case_equivalence_or_drop_unmapped_wording(model):
+    entries = [represented(matched_value=None, requested_value='WHITE'),
+               represented('q2', matched_value='unknown', requested_value='autre')]
+    item, = build_recommendations(model, [], [], entries)['covered']
+    assert item['values'] == ['WHITE', 'autre']
+    assert item['requested_values'] == item['values']
 
 
 @pytest.mark.parametrize('analysis,enabled', [

@@ -15,13 +15,14 @@ CSV export follows the visible filters. Model export preserves the input JSON. T
 
 For a completed schema-only semantic review, the workspace uses a compact catalog view:
 
-- **Suggested filters:** represented attributes with requested values, plus proposals for derived filters. Basic product-type category matches are excluded.
+- **Filters to build:** explicitly proposed derived filters, requiring a new grouping or transformation rule. A represented attribute is never a filter-addition recommendation.
 - **Explore:** attributes to document or requested values to verify.
+- **Already covered:** represented attributes and their matched catalog values, excluded from recommendation counts and the overview recommendation export. Basic product-type category matches are excluded.
 - **Clarify:** unresolved criteria, kept separate from recommendations.
 
 Filter by catalog category to see each recommendation's requested values, distinct source-query count, and next action. The inspector opens with one quotation; further quotations, reasoning and provenance are expandable. CSV export includes recommendation scopes, values, source-query IDs and model references.
 
-The `product_view` is a deterministic projection, not a new inference pass. Groups preserve exact attribute keys and category scopes; derived filters also preserve proposal identity. All original proofs and decisions remain unchanged. Query counts are sample counts, not traffic frequencies, and must not be added across recommendations. These suggestions concern the catalog model, not individual products. Existing storefront filters are not supplied, so a suggested filter is not a claim that it is currently absent.
+The `product_view` is a deterministic projection, not a new inference pass. Groups preserve exact attribute keys and category scopes; derived filters also preserve proposal identity. Covered criteria display the exact observed value supplied by the semantic match; original requested wording remains in `requested_values` and quotations. No case-based or synonym match is invented. All original proofs and decisions remain unchanged. Query counts are sample counts, not traffic frequencies, and must not be added across recommendations. These suggestions concern the catalog model, not individual products. Existing storefront filters are not supplied, so a derived-filter proposal still requires checking the actual storefront. Representation in the catalog alone never recommends a new filter.
 
 ## Design system
 
