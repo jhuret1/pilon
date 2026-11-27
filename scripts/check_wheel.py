@@ -1,8 +1,9 @@
 """Check that the wheel can supply every input needed for the offline demo."""
 from pathlib import Path
 from zipfile import ZipFile
+import sys
 
-wheel, = Path("dist").glob("pilon_discovery-*.whl")
+wheel, = Path(sys.argv[1] if len(sys.argv)>1 else 'dist').glob("pilon_discovery-*.whl")
 with ZipFile(wheel) as archive:
     names = set(archive.namelist())
     required = {"pilon/facets/example/model.json", "pilon/facets/example/signals.jsonl",

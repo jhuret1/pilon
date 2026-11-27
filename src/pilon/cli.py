@@ -28,10 +28,15 @@ def main(argv=None):
     serve.add_argument("--signals", action="append", help="CSV or JSONL feed; repeat for multiple files")
     serve.add_argument("--port", type=int, default=8472)
     commands.stage_arguments(serve)
+    loop = sub.add_parser("loop", help="Benchmark → Extract → Ingest background jobs")
+    from .loop.commands import configure, execute as execute_loop
+    configure(loop)
     argv = sys.argv[1:] if argv is None else argv
     args = parser.parse_args(argv or ["demo"])
     try:
-        if args.command == "serve":
+        if args.command == "loop":
+            execute_loop(args)
+        elif args.command == "serve":
             from .app import serve_report
             if (args.model is None) != (args.signals is None):
                 parser.error("--model and --signals must be supplied together")

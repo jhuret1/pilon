@@ -17,5 +17,8 @@ jobs:
       - run: python scripts/check_release.py
       - run: python -m pytest -q
       - run: pilon demo
+      - run: pilon loop demo
+      - run: pilon loop demo --new-source --html runtime/loop-new.html --output runtime/loop-new.json
+      - run: python -S -m src.pilon loop demo --db runtime/no-install.sqlite --html runtime/no-install.html --output runtime/no-install.json
       - run: python -m build
       - run: python scripts/check_wheel.py
