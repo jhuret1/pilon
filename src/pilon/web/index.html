@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PILON · Ontology lab</title><link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script></head>
+<body><header><a class="brand" href="/">◒ <b>PILON</b><span>Ontology lab</span></a><span class="alpha">RESEARCH ALPHA</span><select id="runs" aria-label="Experiment"></select></header>
+<main><div class="intro"><div><p class="eyebrow">FROM WORDS TO STRUCTURE</p><h1>Explore what the reviews say.</h1><p>Concepts, values and the exact passages behind them. Nothing published automatically.</p></div><button id="download">Export this run ↓</button></div>
+<div id="notice" role="status">Loading local experiments…</div><section id="stats" class="stats" aria-label="Experiment metrics"></section>
+<nav aria-label="Views"><button class="active" data-tab="ontology">Ontology</button><button data-tab="evidence">Evidence & decisions</button><button data-tab="performance">Routing & cost</button></nav>
+<section id="ontology" class="view"><div class="filters"><input id="query" type="search" placeholder="Find a concept, definition or value…" aria-label="Search concepts"><span id="count"></span></div><div class="workspace"><div id="concepts" class="concepts"></div><aside id="detail"><h2>Start with a concept.</h2><p>Select a card to inspect its definition, observed values and source passages.</p></aside></div></section>
+<section id="evidence" class="view" hidden><h2>Every extracted assertion, including rejected scope</h2><div id="assertions"></div></section>
+<section id="performance" class="view" hidden><h2>Measured execution · unmeasured quality</h2><p>Routing proportions describe processing. They are not precision or recall.</p><div id="routes"></div><div id="costs"></div></section>
+<footer>Local experiment viewer · No paid calls are triggered by this page · Candidate concepts ≠ verified facts</footer></main></body></html>

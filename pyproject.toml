@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pilon-ontology"
+version = "0.1.0a1"
+description = "Evidence-linked ontology induction from reviews: a local research workbench"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "PILON contributors"}]
+dependencies = ["Flask>=3.1,<4", "requests>=2.32,<3", "numpy>=2,<3", "filelock>=3.18,<4"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Topic :: Scientific/Engineering :: Artificial Intelligence"]
+
+[project.optional-dependencies]
+openrouter = ["langextract[openai]==1.7.1"]
+dev = ["pytest>=8,<10", "build>=1.2,<2", "ruff>=0.14,<1"]
+
+[project.scripts]
+pilon = "pilon.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pilon = ["data/*.json", "web/*.html", "web/*.css", "web/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["F821", "F822", "F823", "E9"]
