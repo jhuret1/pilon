@@ -3,6 +3,7 @@
 from collections.abc import Mapping
 from html import escape
 import json
+from pathlib import Path
 from urllib.parse import quote
 
 
@@ -191,24 +192,7 @@ _UI_JS = r"""
 })();
 """
 
-_CSS = """
-:root{color-scheme:light;--ink:#242536;--muted:#626779;--line:#e2e3ec;--purple:#604ac5;--soft:#f1edff;--canvas:#f7f8fc}
-*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-a{color:var(--purple);text-decoration:none}a:hover{text-decoration:underline}button,input{font:inherit}[hidden]{display:none!important}
-:focus-visible{outline:3px solid #9482ef;outline-offset:3px}.skip{position:absolute;top:-80px;left:18px;background:white;padding:12px;z-index:9}.skip:focus{top:10px}
-.topbar{background:white;border-bottom:1px solid var(--line);padding:17px max(24px,calc((100vw - 1180px)/2));display:flex;gap:24px;justify-content:space-between;align-items:center}
-.brand{font-size:22px;font-weight:750;letter-spacing:.05em;color:var(--ink);display:flex;gap:10px;align-items:center}.brand-mark{background:var(--purple);border-radius:10px;color:white;display:inline-grid;place-items:center;width:34px;height:34px;letter-spacing:0}.topbar nav{display:flex;gap:22px;flex-wrap:wrap;font-size:14px}.topbar small{color:var(--muted);font-size:12px}
-main{max-width:1180px;margin:auto;padding:34px 24px 64px}h1,h2,h3,p{margin:0}h1{font-size:38px;line-height:1.15;letter-spacing:-.04em;max-width:780px;font-weight:650}h2{font-size:23px;letter-spacing:-.025em;font-weight:650}h3{font-size:16px;font-weight:650}.eyebrow{font-size:11px;letter-spacing:.13em;font-weight:750;color:var(--purple);text-transform:uppercase;margin-bottom:12px}.lead{color:var(--muted);font-size:18px;max-width:760px;margin-top:14px}.hero-top{display:flex;align-items:center;justify-content:space-between;gap:24px}.tag{border:1px solid var(--line);border-radius:24px;padding:5px 11px;font-size:12px;color:var(--muted);white-space:nowrap}.hero-note{color:var(--muted);font-size:13px;margin:14px 0 0}
-.usecases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}.usecase{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;display:block;color:var(--ink)}.usecase:hover{border-color:#b6a9e6;text-decoration:none}.usecase span{color:var(--purple);font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase}.usecase h2{font-size:17px;margin:8px 0}.usecase p{font-size:14px;color:var(--muted)}
-.layout{display:grid;grid-template-columns:190px minmax(0,1fr);gap:30px;align-items:start}.steps{position:sticky;top:24px}.steps ol{padding:0;list-style:none;display:grid;gap:8px;margin:0}.steps a{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:14px;padding:10px 8px;border-radius:8px}.steps a:hover{background:var(--soft);text-decoration:none}.steps b{background:white;border:1px solid var(--line);border-radius:50%;height:27px;width:27px;display:grid;place-items:center;color:var(--purple);flex:none}.steps p{font-size:12px;color:var(--muted);margin:22px 8px}
-.step{background:white;border:1px solid var(--line);border-radius:14px;padding:26px;margin-bottom:18px;scroll-margin-top:20px}.step-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}.step-number{font-size:12px;font-weight:700;background:var(--soft);color:var(--purple);padding:6px 9px;border-radius:7px}.step-head p{color:var(--muted);font-size:14px;margin-top:5px}.file-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.file{background:var(--canvas);border-radius:8px;padding:14px;font-size:13px}.file strong{display:block;font-size:14px;margin-bottom:4px}.file p{color:var(--muted)}code{font:13px/1.6 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}pre{background:#f6f6fb;border:1px solid var(--line);border-radius:8px;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:360px;overflow:auto;margin:12px 0 0;font:13px/1.6 ui-monospace,Consolas,monospace}
-details{border-top:1px solid var(--line);margin-top:15px}summary{cursor:pointer;padding:12px 0;font-size:14px;font-weight:600;color:#51448c}details p{font-size:14px;color:var(--muted);margin:0 0 8px}.small{font-size:13px;color:var(--muted);margin-top:10px}.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.mode{padding:13px;border:1px solid var(--line);border-radius:9px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;font-size:14px}.mode:has(input:checked){background:var(--soft);border-color:#b9aee7}.mode input{margin-top:5px;accent-color:var(--purple)}.mode strong,.mode small{display:block}.mode small{font-size:12px;color:var(--muted);margin-top:3px}fieldset{margin:0;padding:0;border:0;min-width:0}legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:4px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:15px 0}.field{font-size:13px;font-weight:600;display:grid;gap:5px;align-content:start}.field.wide{grid-column:1/-1}.field small{font-weight:400;color:var(--muted);font-size:12px}.field input{width:100%;min-width:0;border:1px solid #cfd1df;border-radius:7px;padding:9px 11px;background:white;font-size:14px;color:var(--ink)}.field input:focus{border-color:var(--purple)}.note{background:var(--canvas);border-radius:8px;padding:13px 15px;font-size:13px;color:var(--muted);margin:14px 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 0}button,.button{background:var(--purple);border:1px solid var(--purple);color:white;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}.secondary,.command button{background:white;color:var(--purple);border-color:var(--line)}button:disabled{opacity:.5;cursor:default}.status{font-size:13px;color:var(--muted);margin-top:12px;min-height:20px}
-.command{border:1px solid var(--line);padding:16px;border-radius:10px;margin-top:14px}.command-head{display:flex;align-items:center;justify-content:space-between;gap:14px}.command button{padding:5px 10px;font-size:12px}.command p{color:var(--muted);font-size:13px;margin-top:5px}.review-path{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;margin:16px 0}.review-path span{background:var(--soft);color:#51448c;padding:7px 10px;border-radius:7px}.recent-heading{font-size:18px;margin:30px 0 12px}.recent-list{display:grid;gap:8px}.recent-job{border:1px solid var(--line);border-radius:9px;padding:13px 16px;display:flex;justify-content:space-between;gap:18px;background:white;font-size:13px}.recent-job strong{display:block;color:var(--ink)}.recent-job small{display:block;overflow-wrap:anywhere;color:var(--muted);font-size:11px}.empty{color:var(--muted);font-size:13px;margin-top:22px}.footer{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:18px;margin-top:24px}.copy-status{position:fixed;bottom:16px;right:18px;background:#29253b;color:white;border-radius:8px;font-size:13px;padding:10px 15px;max-width:calc(100vw - 36px)}.copy-status:empty{display:none}
-@media(max-width:820px){.layout{grid-template-columns:1fr;gap:18px}.steps{position:static}.steps ol{display:flex;flex-wrap:wrap;gap:4px}.steps a{font-size:12px}.steps p{display:none}.usecases{gap:10px}.usecase{padding:14px}.hero-top{align-items:flex-start}.tag{display:none}}
-@media(max-width:580px){main{padding:24px 16px 40px}.topbar{padding:14px 16px;gap:16px;flex-wrap:wrap}.topbar small{display:none}.topbar nav{gap:16px}h1{font-size:30px}.lead{font-size:16px}.usecases{grid-template-columns:1fr;gap:8px;margin:20px 0}.usecase{padding:13px 16px}.usecase h2{margin:4px 0}.step{padding:18px}.step h2{font-size:21px}.mode-grid,.form-grid,.file-pair{grid-template-columns:1fr}.field.wide{grid-column:auto}.recent-job{flex-wrap:wrap}.steps a{padding:5px}.steps b{width:23px;height:23px}.command-head{gap:8px}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-"""
+_CSS = (Path(__file__).parent / 'ui' / 'onboarding.css').read_text(encoding='utf-8')
 
 
 def render_onboarding(jobs=(), *, focus=None):
@@ -228,15 +212,27 @@ def render_onboarding(jobs=(), *, focus=None):
             ('openai_compatible', 'OpenAI-compatible endpoint', 'A hosted or self-managed server'),
             ('ollama', 'Ollama · local', 'A model already installed on your machine')))
     body = '''<a class="skip" href="#main">Skip to setup</a>
-<header class="topbar"><a class="brand" href="/start"><span class="brand-mark" aria-hidden="true">p</span>PILON</a>
-<nav aria-label="Main navigation"><a href="/start" aria-current="page">Get started</a><a href="/connectors#connectors">Connectors</a><a href="/">Benchmark</a></nav><small>Local workspace · read only</small></header>
-<main id="main"><div class="hero-top"><div><p class="eyebrow">From customer demand to product knowledge</p>
-<h1>Find what your catalog is missing.</h1><p class="lead">Bring your attributes and values, compare real requests, then review the evidence behind a proposed change.</p></div><span class="tag">No automatic publication</span></div>
-<p class="hero-note">Prepare locally. Run from your terminal. Review before changing your model.</p>
+<header class="topbar"><a class="brand" href="/start"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>PILON</a>
+<nav aria-label="Main navigation"><a href="/start" aria-current="page">Get started</a><a href="/connectors#connectors">Connectors</a><a href="/">Workspace ↗</a></nav><small>LOCAL / ALPHA</small></header>
+<main id="main"><section class="hero" aria-labelledby="hero-title"><div class="hero-copy"><p class="eyebrow">Customer demand → product knowledge</p>
+<h1 id="hero-title">Your catalog<br>has <em>blind spots.</em></h1>
+<p class="lead">Turn what customers ask for into missing attributes, missing values and evidence-backed catalog changes.</p>
+<div class="hero-actions"><a class="cta" href="#quickstart">Try the demo <span aria-hidden="true">↗</span></a><a class="text-link" href="#setup">Bring your catalog →</a></div>
+<p class="hero-note">Open source. Runs locally. No API key for the demo.</p></div>
+<aside class="example" aria-label="Worked example from Home Depot">
+<div class="example-label"><span>ONE REQUEST. TWO GAPS.</span><span>HOME DEPOT EXAMPLE</span></div>
+<div class="example-query"><span class="search-glyph" aria-hidden="true"></span>gnat killer</div>
+<div class="example-row"><div><small>EXISTING ATTRIBUTE</small><strong>Pest Type</strong></div><span class="arrow" aria-hidden="true">→</span><div class="addition"><small>ADD A VALUE</small><strong>+ Gnats</strong></div></div>
+<div class="example-row"><div><small>MISSING DISTINCTION</small><strong>Kill, repel or trap?</strong></div><span class="arrow" aria-hidden="true">→</span><div class="addition"><small>ADD AN ATTRIBUTE</small><strong>+ Control action</strong></div></div>
+<details class="example-evidence"><summary>See the product evidence</summary><blockquote>“Raid 15 oz. Ready-to-Use Flying Insect Killer exterminates flies, mosquitoes, gnats and other flying insects as they fly through the mist.”</blockquote><p>Product 143379 · source characters 0–138 · supports the value “kill”.</p></details>
+<p class="example-caption">Worked example · agent-reviewed · proposed, not published.</p></aside></section>
 <div class="usecases" aria-label="Three ways to use PILON">
-<a class="usecase" href="#model-step"><span>Discover attributes</span><h2>What can’t the catalog describe?</h2><p>Find missing attributes in search requests and support conversations.</p></a>
-<a class="usecase" href="#demand-step"><span>Extend values</span><h2>What is missing from an existing attribute?</h2><p>Compare requested values with the vocabulary you already have.</p></a>
-<a class="usecase" href="#run-step"><span>Find product evidence</span><h2>What would actually change?</h2><p>Inspect source quotations and preview attribute and product-value changes.</p></a></div>
+<a class="usecase" href="#model-step"><span>01 / BENCHMARK</span><h2>Find the gap. <b aria-hidden="true">↗</b></h2><p>Compare customer requests with your attributes and values. Keep what is already covered.</p><small>Discover attributes · Extend values</small></a>
+<a class="usecase" href="#evidence-input"><span>02 / EXTRACT</span><h2>Find the evidence. <b aria-hidden="true">↗</b></h2><p>Check selected gaps against product sources. Keep the exact passages that support a value.</p><small>Find product evidence</small></a>
+<a class="usecase" href="#output-guide"><span>03 / INDUCT</span><h2>Review the change. <b aria-hidden="true">↗</b></h2><p>Inspect new attributes, values and product assignments as a concrete before/after.</p><small>Preview the model diff</small></a></div>
+<section class="quickstart" id="quickstart" aria-labelledby="quickstart-title"><div><span class="section-label">Start here / no key needed</span><h2 id="quickstart-title">See a complete loop.</h2><p>From an installed checkout, run the synthetic demo. Explore the requests, evidence and proposed model.</p></div><div>''' + _command('quick-demo-command', 'Run at the repository root', 'pilon start --demo',
+    'First install with python -m pip install -e .') + '''</div></section>
+<div class="setup-title" id="setup"><div><span class="section-label">Your data / your model</span><h2>Make it your own.</h2></div><p>Four steps from your catalog export to a reviewable benchmark.</p></div>
 <div class="layout"><aside class="steps"><nav aria-label="Setup steps"><ol>
 <li><a href="#model-step"><b>1</b>Catalog model</a></li><li><a href="#demand-step"><b>2</b>Demand feed</a></li>
 <li><a href="#connectors"><b>3</b>Choose a provider</a></li><li><a href="#run-step"><b>4</b>Run &amp; review</a></li></ol></nav>
@@ -252,7 +248,7 @@ def render_onboarding(jobs=(), *, focus=None):
 <p class="small">Keep the original text and a stable record ID. Identify demand records with <code>role: demand</code>; retain source, dates and category context.</p>
 <details><summary>Start with four synthetic requests</summary><pre><code>''' + _e(_SIGNALS) + '''</code></pre>
 <p class="small">Replace the <code>--signals</code> path with your own export when ready. These files stay on disk; this page has no upload step.</p></details>
-<details><summary>Product evidence is a separate input</summary><p>Demand explains why a fact matters. Product descriptions, specifications and other source records establish evidence for a product value. Add those sources when moving a selected proposal into Extract.</p></details></section>
+<details id="evidence-input"><summary>Product evidence is a separate input</summary><p>Demand explains why a fact matters. Product descriptions, specifications and other source records establish evidence for a product value. Add those sources when moving a selected proposal into Extract.</p></details></section>
 <section class="step" id="connectors" aria-labelledby="connectors-title"><div class="step-head"><span class="step-number">03</span><div>
 <h2 id="connectors-title" tabindex="-1">Choose how to interpret requests</h2><p>Try the offline example, or prepare a provider for your benchmark.</p></div></div>
 <fieldset><legend>Interpretation mode</legend><div class="mode-grid">''' + modes + '''</div></fieldset>
@@ -268,7 +264,7 @@ def render_onboarding(jobs=(), *, focus=None):
 <details id="config-detail"><summary>Preview configuration JSON</summary><pre id="config-preview">Complete the settings above to preview your configuration.</pre></details>
 <noscript><p class="note">JavaScript enables local configuration generation, copy buttons and downloads. Commands below remain selectable. Enable JavaScript to prepare provider settings; no network request is made.</p></noscript></section>
 <section class="step" id="run-step" aria-labelledby="run-title"><div class="step-head"><span class="step-number">04</span><div>
-<h2 id="run-title">Run deliberately. Review the result.</h2><p>Copy commands into a terminal at the repository root, with PILON installed.</p></div></div>
+<h2 id="run-title">Run your first benchmark.</h2><p>Copy commands into a terminal at the repository root, with PILON installed.</p></div></div>
 <div id="offline-commands">''' + _command('demo-command', 'Try the no-key demo', 'pilon start --demo',
     'Runs the bundled synthetic loop, then serves the local onboarding and results.') + '''
 <details><summary>Generate the demo report without serving</summary>''' + _command('offline-command', 'Generate a demo report', 'pilon loop demo',
@@ -284,10 +280,14 @@ def render_onboarding(jobs=(), *, focus=None):
     'Also serves the read-only workspace. Open /start for setup or the job URL printed by the run.') + '''</details>
 <div class="review-path" aria-label="Review stages"><span>Benchmark · demand gaps</span><span>Extract · product evidence</span><span>Induct · proposed diff</span></div>
 <p class="small">The benchmark command handles demand comparison. Product evidence and model-change previews are subsequent review stages; a benchmark run alone does not populate them.</p>
-<details><summary>Read your output</summary><p>Inspect the files under <code>runtime/my-benchmark</code> and the job URL printed by the command. Saved benchmarks open at <code>/jobs/JOB_ID</code>. An enrichment job has separate <code>/extract/JOB_ID</code> and <code>/induct/JOB_ID</code> views.</p>
+<details id="output-guide"><summary>Read your output</summary><p>Inspect the files under <code>runtime/my-benchmark</code> and the job URL printed by the command. Saved benchmarks open at <code>/jobs/JOB_ID</code>. An enrichment job has separate <code>/extract/JOB_ID</code> and <code>/induct/JOB_ID</code> views.</p>
 <p>Exact quotations establish provenance, not independent semantic accuracy. Review proposals and unresolved cases before accepting any change.</p></details></section>
 ''' + _recent(jobs) + '''</div></div><footer class="footer">PILON prepares reviewable proposals. This workspace does not publish a model, change a storefront or execute the commands shown here.</footer></main>
 <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>'''
+    if focus == 'connectors':
+        body = body.replace('href="/start" aria-current="page"', 'href="/start"')
+        body = body.replace('href="/connectors#connectors">Connectors',
+                            'href="/connectors#connectors" aria-current="page">Connectors')
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width, initial-scale=1">'
             '<title>Get started · PILON</title><style>' + _CSS + '</style></head>'

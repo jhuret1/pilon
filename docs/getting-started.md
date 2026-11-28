@@ -1,45 +1,81 @@
-# Get started in five minutes
+# Your catalog has blind spots.
 
-Start with a customer question: is the requested feature already represented, does the model need a new value or attribute, or is the request ambiguous? **Benchmark** produces that review. Add product evidence later through **Extract**, then inspect a model change in **Induct**.
+A customer asks for shoes with removable insoles. Can your catalog describe that need? PILON compares customer requests with your catalog structure, shows possible gaps, and lets you investigate selected proposals with product evidence.
 
-## Open the local demo
+**Start with one question. Follow its evidence. Review the change.**
 
-Use Python 3.11+ and run from the repository root:
+| Choose your route | What you need | What you get |
+| --- | --- | --- |
+| **[1. Explore the offline demo](#route-1-explore-the-offline-demo)** | Python and this checkout | A synthetic example across Benchmark, Extract and Induct. No model service or API key. |
+| **[2. Use your own catalog and requests](#route-2-use-your-own-catalog-and-requests)** | Catalog structure, request exports and a model configuration | A semantic Benchmark review. Preview locally before enabling inference. |
+
+## Set up the cloned repository
+
+Open a terminal in the project folder containing `pyproject.toml`. Use **Python 3.11+**, and run all commands on this page from that folder:
 
 ```sh
 python -m pip install -e .
+```
+
+Installation may download packaging tools. The demo itself runs offline. If you cannot install, use the no-install option below.
+
+## Route 1: Explore the offline demo
+
+```sh
 pilon start --demo
 ```
 
-Open the printed **http://127.0.0.1:8473/start** link. The bundled example is synthetic and requires no model API key. Inspect a proposal, its source quotations, and the assignments that remain unknown or conflicted. The demo runs through projection and publishes nothing. Installation may fetch packaging tools; running the demo makes no inference calls.
+Open **[/start](http://127.0.0.1:8473/start)** at the printed local address, then open the demo run. The example uses synthetic requests and product sources, with local rules rather than model calls.
 
-![PILON onboarding: choose a use case, supply a catalog and demand, then configure a model.](assets/pilon-onboarding.jpg)
+Each workspace answers a different question:
 
-Use `pilon start` without `--demo` to open onboarding without creating a demo job. `/connectors` offers configuration examples to download. These are read-only pages: they do not execute models, expose environment secrets, or publish changes. `--port` changes the local port and `--db` selects the workspace database.
+| Workspace | Look for |
+| --- | --- |
+| **Benchmark** — What is missing? | Represented needs, proposed attributes or values, and requests that need clarification. |
+| **Extract** — What can the products prove? | Source quotations, product assignments, conflicts and unknowns. |
+| **Induct** — What would change? | The proposed catalog structure and assignment changes before publication. |
 
-For an uninstalled, offline checkout, the static HTML demo is also available:
+The demo prepares a local projection; nothing is published. Keep the terminal running while you browse. Press **Ctrl+C** to stop it before switching routes.
+
+<details>
+<summary>No installation or browser server: save an offline report</summary>
+
+From the same project folder, with Python 3.11+:
 
 ```sh
 python -m src.pilon loop demo
 ```
 
-Open `runtime/background-loop.html`; its JSON counterpart is `runtime/background-loop.json`. Add `--new-source` and distinct `--html`/`--output` paths to save a second snapshot with evidence for a removable-insole assignment. Unsupported proposals remain visible.
+Open `runtime/background-loop.html`. The accompanying data is in `runtime/background-loop.json`. This uses the checkout directly and makes no inference calls.
 
-## Preview a semantic run
+</details>
 
-The bundled [Benchmark model](../src/pilon/facets/example/benchmark-model.json) and [four requests](../src/pilon/facets/example/benchmark-requests.jsonl) are small synthetic inputs suitable for the model connector:
+## Route 2: Use your own catalog and requests
+
+Start the local guide with a separate workspace:
 
 ```sh
-pilon benchmark run --model src/pilon/facets/example/benchmark-model.json --signals src/pilon/facets/example/benchmark-requests.jsonl --config configs/openrouter.json --output-dir runtime/my-benchmark --db runtime/my-benchmark/jobs.sqlite
+pilon start --db runtime/my-benchmark/jobs.sqlite
 ```
 
-The default is **dry run**: no model request is sent and no API key is needed for the preview. Inspect the planned work and estimates before deciding to execute. The example explicitly selects `runtime/my-benchmark/jobs.sqlite` so later commands can share that workspace. The complete schema and values must fit the configured context; oversized context is rejected rather than replaced by a lexical shortlist. The default run is bounded to 20 demand records; larger inputs require explicit partitioning.
+Open **[/start](http://127.0.0.1:8473/start)**. Keep this terminal running and use a second terminal in the same project folder for the commands below. The pages help prepare configuration and commands; you run those commands yourself.
 
-Choose [OpenRouter](../configs/openrouter.json), [OpenAI-compatible](../configs/openai-compatible.json), or [local Ollama](../configs/local-ollama.json). Review the endpoint, model and limits before use. The [model connector guide](model-connectors.md) explains credential setup, cost estimates and resume.
+### Prepare your own files
 
-## Prepare your own files
+Save these three files in the project folder:
 
-The input contract is a model JSON object and demand records in JSONL or CSV. CSV uses the same field names as column headers; use JSONL for nested data. Here is a minimal **synthetic** `model.json`, using the same schema-only contract as the bundled example:
+| File | Contents |
+| --- | --- |
+| `model.json` | Your **catalog model**: categories, stable attribute keys, definitions and full observed value lists. |
+| `requests.jsonl` | Customer requests, one JSON object per line. CSV with the same field names as headers also works. |
+| `pilon.config.json` | Your **inference model** connection: endpoint, model identifier and run limits. |
+
+Start with a small set of representative requests. The supplied configurations allow up to **20 records** per run; larger inputs require an explicit scope or limit change. The complete catalog model must fit the configured context.
+
+<details>
+<summary>Copy a minimal catalog model and two requests</summary>
+
+This synthetic `model.json` describes the catalog structure only:
 
 ```json
 {
@@ -63,71 +99,51 @@ The input contract is a model JSON object and demand records in JSONL or CSV. CS
 }
 ```
 
-Save `requests.jsonl` with one JSON object per line, without an enclosing array:
+Save `requests.jsonl` without an enclosing array:
 
 ```jsonl
 {"id":"request-1","category":"running-shoes","role":"demand","source":"synthetic_example","text":"wide running shoes","count":1}
 {"id":"request-2","category":"running-shoes","role":"demand","source":"synthetic_example","text":"running shoes with a removable insole","count":1}
 ```
 
-Replace the synthetic data with your actual model and exported requests; remove the synthetic flag for real inputs. Keep full observed value domains, stable attribute keys, immutable record IDs and unchanged source text. `category` identifies the shared dataset/domain and must match between model and records. An empty `categories` array means no product taxonomy was supplied.
+Replace the examples with your real data and remove the synthetic flag. Keep immutable record IDs and unchanged source text. The model and records must share the same `category`. An empty `categories` array means no product taxonomy was supplied.
 
-This example deliberately uses `schema_only` with an unknown observation period, so dates and product assignments are unnecessary. Each row is one sampled request, not a measured customer frequency. If you supply real event counts or dates, preserve their actual meaning. Schema-only review cannot establish product availability, per-product coverage, or live storefront filters. See the [record guide](source-connectors.md) for broader feeds.
+Here each row is one sampled request. `schema_only` with an unknown observation period permits undated requests and no product assignments. Preserve the actual meaning of dates and event counts when using measured demand. This review alone cannot establish product availability or coverage. See the [source record guide](source-connectors.md) for broader feeds.
 
-Preview your files with the same command:
+</details>
 
-```sh
-pilon benchmark run --model model.json --signals requests.jsonl --config configs/openrouter.json --output-dir runtime/my-own-benchmark --db runtime/my-own-benchmark/jobs.sqlite
-```
+### Choose the inference connection
 
-## Execute, then review
+Download `pilon.config.json` from **[/connectors](http://127.0.0.1:8473/connectors)**, or copy and customize an [OpenRouter](../configs/openrouter.json), [OpenAI-compatible](../configs/openai-compatible.json) or [local Ollama](../configs/local-ollama.json) template. Save it in the project folder.
 
-For a hosted provider, set the environment variable named in the configuration; keep the actual key out of JSON and source control. For Ollama, prepare the local model and compatible endpoint separately. PILON does not download or start that service.
+Set the endpoint and model for your setup. Hosted providers use an API key stored in the named environment variable; Ollama needs an already running local service and model. The **[model connector guide](model-connectors.md)** covers credentials, limits and resume.
 
-Add `--execute` only when ready to send model requests:
+### Preview, then run
 
 ```sh
-pilon benchmark run --model model.json --signals requests.jsonl --config configs/openrouter.json --output-dir runtime/my-own-benchmark --db runtime/my-own-benchmark/jobs.sqlite --execute
+pilon benchmark run --model model.json --signals requests.jsonl --config pilon.config.json --output-dir runtime/my-benchmark --db runtime/my-benchmark/jobs.sqlite
 ```
 
-Execution validates quotation spans and references to your model. Invalid semantic claims become explicit unresolved items, with a validation count; transport or malformed-response failures stop the run. Validated reviews are cached for resume and assembled into a Benchmark result. Grounding checks do not establish semantic accuracy: inspect aliases, units, intended use and ambiguous wording. Rates in your configuration drive estimates, not a guaranteed billing cap.
+This is a **dry run**: no API key, model request or Benchmark job. Check the record count, model size and estimated requests/cost. A preview does not test endpoint availability or credentials.
 
-Use the job ID printed by the command. For the own-files example above, open its database:
+When ready, enable inference explicitly:
 
 ```sh
-pilon start --db runtime/my-own-benchmark/jobs.sqlite
+pilon benchmark run --model model.json --signals requests.jsonl --config pilon.config.json --output-dir runtime/my-benchmark --db runtime/my-benchmark/jobs.sqlite --execute
 ```
 
-If you selected a different database, use that printed path instead. Open the returned Benchmark link. Review represented constraints, attribute/value proposals, and unresolved requests. Semantic execution stops at **Benchmark**; it does not extract product facts or publish a model.
+Execution sends the complete catalog model and each selected request record to your configured endpoint. For a hosted service, prepare inputs suitable for sending there. Configured prices drive estimates, not a guaranteed billing cap.
 
-## Investigate one proposal with product evidence
+### Review in Benchmark
 
-After reviewing a proposal, supply catalog sources from the same dataset. For the synthetic model above, a valid `product-sources.jsonl` example is:
+Return to [/start](http://127.0.0.1:8473/start), refresh, and open the completed run matching the printed job ID. The server and command above use the same database.
 
-```jsonl
-{"id":"source-1","category":"running-shoes","role":"catalog","source":"synthetic_product_spec","product_id":"shoe-1","text":"Removable insole: yes"}
-```
+Review represented needs, proposed attributes or values, and unresolved requests. Exact quotation and model-reference checks keep the review traceable; they do not guarantee correct interpretation. **This command stops at Benchmark.**
 
-Replace the example with genuine product text. Demand expresses what people want; a catalog record supplies evidence about a product. `Label: value` text is supported by the local parser. Free text can carry supplied exact-span annotations or use a custom extractor; the configured Benchmark model is not automatically used for extraction.
+## Follow one proposal into product evidence
 
-Select the exact candidate key shown in Benchmark, then run the returned child job:
+Once a proposal is worth investigating, supply product sources from the same dataset and select its exact candidate key. **[Select proposals explicitly](tools-and-connectors.md#select-proposals-explicitly)** provides the commands and a source-record example.
 
-```sh
-pilon loop enrich BENCHMARK_JOB --candidate CANDIDATE_KEY --signals product-sources.jsonl --db runtime/my-own-benchmark/jobs.sqlite
-pilon loop work --job ENRICHMENT_JOB --once --db runtime/my-own-benchmark/jobs.sqlite
-```
+**Extract** checks product evidence. **Induct** shows the proposed change. Publication is a separate local action; connecting a PIM or storefront requires your own integration.
 
-`enrich` prints the new `ENRICHMENT_JOB` identifier and the Extract/Induct links. It accepts reviewed proposals with an existing attribute key or a stable proposed key; unresolved intent needs clarification first. Repeat `--candidate` to select several. An optional routing manifest limits each target to selected source records. A shortlist does not establish full-catalog recall.
-
-Inspect **Extract** for evidence, conflicts and unknowns, and **Induct** for the proposed schema and assignment diff. Publication is a separate local operation; no PIM or storefront is updated. See [tools and handoff](tools-and-connectors.md#select-proposals-explicitly) and the [publication contract](background-loop-contract.md).
-
-## Choose your next path
-
-| Goal | Guide |
-| --- | --- |
-| Configure a hosted or local model and control a small run | [Model connectors](model-connectors.md) |
-| Reproduce the real 1,000-request Home Depot example without inference calls | [Home Depot replay](home-depot-example.md) |
-| Map search, support or catalog exports; add an extractor | [Tools and connectors](tools-and-connectors.md), [source records](source-connectors.md) |
-| Watch local exports, revisit evidence, publish or roll back locally | [Background-loop contract](background-loop-contract.md) |
-
-The Home Depot example reattaches supplied agent decisions to local source CSVs. It does not demonstrate that the new provider connector processed those 1,000 requests, and its review counts are not an independent accuracy measurement.
+For a larger offline example, follow the [Home Depot replay](home-depot-example.md). It reuses supplied reviews for 1,000 requests and local CSVs; it makes no new inference calls and is not an independent accuracy test.

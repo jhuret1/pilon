@@ -1,102 +1,71 @@
-# PILON
+![PILON — Your catalog has blind spots.](docs/assets/pilon-hero.svg)
 
-**Find what customers ask for that your catalog cannot yet describe.**
+**Turn customer demand into a schema diff. Keep the evidence.**
 
-PILON compares demand with your existing attributes **and values**, finds supporting product evidence, and proposes a precise model change.
+Treat customer demand as a test of your catalog. PILON compares search and support requests with your existing attributes **and their values**, reuses what already covers the demand, and investigates gaps with product evidence. Catalog and search teams get a concrete change to review: new attributes, new values and the product assignments they support.
 
-![A real Home Depot request: gnat killer. Before, the model lacks Gnats and a control-action attribute. After, exact product evidence supports Gnats plus separate kill, repel and trap values.](docs/assets/home-depot-before-after.jpg)
+[**Try the demo**](#try-it-locally) · [**See the evidence**](docs/home-depot-example.md) · [**Bring your data**](docs/getting-started.md#prepare-your-own-files) · [**Contribute**](CONTRIBUTING.md)
 
-*Illustrated from the real Home Depot run below. Proposed changes, not a published storefront. [Inspect the example and source evidence](docs/home-depot-example.md).*
+## “gnat killer” is two requirements
 
-## Start with the question you need to answer
+In the recorded Home Depot example, the request asks for a target pest **and** an action. The catalog already has `Pest Type`; the missing pieces are more precise:
 
-| Your situation | Start here | What you get |
+| Attribute | Existing model | Proposed change |
 | --- | --- | --- |
-| Customers ask for features your catalog may already describe under another name. | **Benchmark** your search or support requests against the full model and observed values. | Represented constraints, proposed attributes or values, and requests that need clarification. |
-| You have a promising proposal but need product evidence. | Select proposals and supply product sources to **Extract**. | Exact evidence, proposed assignments, conflicts and unknowns. |
-| You need a reviewable change for your catalog or search team. | Inspect the **Induct** projection. | A before/after model diff; publication remains an explicit step. |
+| `Pest Type` | Present, but no observed `Gnats` value | Reuse the attribute; add `Gnats` |
+| `Pest control action` | Absent | Add a separate attribute: `kill`, `repel`, `trap` |
 
-PILON runs in the background. It helps teams investigate and maintain product knowledge; it does not answer shoppers or update a live storefront automatically.
+Reviewed descriptions support **4 kill, 6 repel and 2 trap** assignments. Keeping the action separate preserves the distinction between a killer, a repellent and a trap. Each assignment links to its source evidence and scope.
 
-## Background-loop quickstart
+[Inspect the recorded example →](docs/home-depot-example.md)
 
-From a checkout with Python 3.11+:
+## Try it locally
+
+With **Python 3.11+**, clone the repository and run from its root:
 
 ```sh
-python -m pip install -e .
+git clone https://github.com/jhuret1/pilon.git
+cd pilon
+pip install -e .
 pilon start --demo
 ```
 
-Open the printed **http://127.0.0.1:8473/start** link. The bundled synthetic demo needs no model API key and makes no inference calls. Inspect its proposals, evidence and model diff. Installation may fetch packaging tools.
+Open [**localhost:8473/start**](http://127.0.0.1:8473/start). Explore a proposal, its evidence and the proposed model diff. The bundled demo uses **synthetic data**, needs **no API key** and makes **no model calls**.
 
-Use `pilon start` to open onboarding without creating a demo job. The guide and connector configuration downloads are read-only; opening them starts no model calls.
+For your own requests, semantic Benchmark supports configurable **OpenRouter, OpenAI-compatible endpoints and local Ollama**. Preview a run before explicitly enabling inference.
 
-[**Five-minute guide: demo and your own files →**](docs/getting-started.md)
+[First-run guide →](docs/getting-started.md) · [Model setup →](docs/model-connectors.md)
 
-## Run semantic Benchmark on your own requests
+## Three tools. Three separate decisions.
 
-Try the bundled synthetic model and four requests, then replace the input paths with your own model JSON and demand JSONL. The [getting-started guide](docs/getting-started.md#prepare-your-own-files) explains both formats.
+1. **Benchmark — Find what the model covers.** Compare demand with the full supplied model and observed values. Reuse covered attributes and values; surface missing ones and requests that need clarification.
+2. **Extract — Check the product evidence.** Select proposals and supply product sources. Inspect exact quotations, proposed assignments, conflicts and unknowns.
+3. **Induct — Review the change.** Inspect the before/after model, evidence-linked assignments and blocked proposals.
 
-```sh
-pilon benchmark run --model src/pilon/facets/example/benchmark-model.json --signals src/pilon/facets/example/benchmark-requests.jsonl --config configs/openrouter.json --output-dir runtime/my-benchmark --db runtime/my-benchmark/jobs.sqlite
-```
+Benchmark stops at its review. You choose what moves to Extract. **Nothing is published automatically**; local publication is explicit, and connecting changes to your PIM or search index is a separate integration.
 
-This is a **dry run by default**. Review the planned work and estimates before adding `--execute`. Execution uses the configured OpenRouter, OpenAI-compatible, or local Ollama endpoint and validates exact quotations and model references. It stops at Benchmark. Selected proposals move to Extract through `pilon loop enrich`.
+![The actual Induct workspace: Pest Type gains Gnats, and a separate Pest control action attribute holds kill, repel and trap.](docs/assets/home-depot-induct.jpg)
 
-Choose the provider, model, environment-variable name for credentials, and limits in JSON. The default request batch is bounded to 20 records. The complete model and observed values must fit the configured context; oversized context is rejected rather than silently shortened. Estimated spending guards use your configured rates and cannot guarantee a provider's final bill.
+*Home Depot run · proposed changes in the Induct workspace · not published.*
 
-[**Configure a model and understand the guards →**](docs/model-connectors.md)
+## A recorded run, with evidence to inspect
 
-## How the pieces fit
+**1,000 distinct Home Depot queries** compared with **5,388 attributes and 122,088 observed attribute/value pairs**.
 
-```text
-Model + demand exports
-        ↓
-Benchmark: interpret requests and compare the model
-        ↓ explicit selection + product sources
-Extract: verify source evidence
-        ↓
-Induct: inspect the proposed model and assignment diff
-        ↓ explicit local publication
-Versioned snapshot → your downstream integration
-```
+- **Benchmark:** 1,420 represented criteria, 43 value gaps, 9 attribute gaps and 562 unresolved criteria.
+- **Extract:** 39 shortlisted descriptions reviewed; 22 products with supporting evidence.
+- **Induct:** 3 new attributes, 1 value-domain extension and 34 evidence-linked assignments proposed. Two proposals remained blocked.
 
-Model connections generate semantic reviews of new demand. Source connections supply demand and product evidence. These are separate responsibilities: a configured LLM does not connect your PIM, fetch product pages, or supply product facts.
+These counts replay **supplied agent reviews**, including a targeted second pass on 102 queries. They are **not independent accuracy results or measurements of the model connectors**. One query can contain several criteria; retrieval recall was not measured.
 
-| Available now | Integration still required |
-| --- | --- |
-| Configurable semantic model calls; dry runs, limits, review validation, caching and usage records | Your choice of model and evaluation on representative requests |
-| CSV/JSONL exports, WANDS and Home Depot importers, local file watching | Direct authenticated CRM, search, PIM and CMS feeds |
-| Lexical and FTS5 routing, supplied-vector hooks, exact annotation checks | BGE execution, LangExtract wrappers, OCR/vision and ANN integrations |
-| SQLite jobs, checkpoints, review pages, local projection/publication/rollback | Writes to a live PIM, knowledge graph, search index or storefront |
+[Results manifest →](docs/examples/home-depot-results.json) · [Reproduce with your local source CSVs →](docs/home-depot-example.md#reproduce-benchmark-and-replay-the-reviews)
 
-[**Built-in tools, extension contracts and planned connectors →**](docs/tools-and-connectors.md)
+## Build on it
 
-## A real example: Home Depot
+- [**Getting started**](docs/getting-started.md) — demo, input formats and your first run.
+- [**Model connectors**](docs/model-connectors.md) — providers, credentials, execution limits and resume.
+- [**Tools and connectors**](docs/tools-and-connectors.md) — built-in capabilities, extension points and planned integrations.
+- [**Source records**](docs/source-connectors.md) · [**Job lifecycle and publication**](docs/background-loop-contract.md).
+- [**Contributing**](CONTRIBUTING.md) · [**Data handling**](SECURITY.md) · [**MIT license**](LICENSE).
 
-**1,000 distinct requests → 5,388 attributes + 122,088 observed values.**
-
-| Benchmark found | Extract checked | Induct proposed |
-| --- | --- | --- |
-| 1,420 represented criteria; 9 attribute proposals; 43 value proposals; 562 criteria to clarify | 39 shortlisted descriptions from an index of 124,428; 22 products with supporting evidence | 3 new attributes, 1 value-domain extension, 34 evidence-linked assignments; 2 proposals without sufficient evidence retained |
-
-Several criteria can come from one request. These are supplied agent decisions, with a targeted second pass on 102 requests, not independent accuracy or recall measurements. **The 1,000-request example replays detached decisions; it did not run through the new model connector.** Replay makes no inference API calls; the earlier agent work is separate.
-
-Supply the source CSVs locally to reproduce it:
-
-```sh
-python scripts/replay_home_depot.py --input-dir /path/to/home-depot-csvs
-```
-
-[**Inputs, replay, evidence and limitations →**](docs/home-depot-example.md)
-
-## Go further
-
-- [Getting started](docs/getting-started.md): first run, input shapes, review and handoff.
-- [Model connectors](docs/model-connectors.md): provider configuration, execution, limits and resume.
-- [Tools and connectors](docs/tools-and-connectors.md): implementation inventory and source/extractor boundaries.
-- [Background-loop contract](docs/background-loop-contract.md): job lifecycle, projection, publication and rollback.
-- [Source record guide](docs/source-connectors.md) and [original Discovery walkthrough](docs/use-case-ecommerce-filter-discovery.md).
-- [Contribution guide](CONTRIBUTING.md), [data handling](SECURITY.md), and [MIT license](LICENSE).
-
-**Local alpha · v0.3.0a1.** Quotes establish where evidence came from; they do not prove a model's interpretation. Observed values do not establish product coverage. Review proposals and evaluate their usefulness before downstream publication. Reports retain source text and need the same access controls as their inputs.
+**Local alpha · Python 3.11+ · MIT**

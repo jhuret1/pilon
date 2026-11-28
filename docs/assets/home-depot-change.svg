@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="710" viewBox="0 0 1280 710" role="img" aria-labelledby="title desc">
+  <title id="title">One search. A precise catalog change.</title>
+  <desc id="desc">Home Depot example. Before: Pest Type exists without an observed Gnats value; no pest control action attribute. Proposed after: add Gnats and separate kill, repel and trap values. Source quotations support 12 selected products. This is an agent-reviewed proposal, not a published or independently audited result.</desc>
+  <rect width="1280" height="710" fill="#f5f4ec" />
+  <path d="M38 32h7v30h-7zm12 0h7v21h-7zm12 0h7v12h-7" fill="#18201b" />
+  <g font-family="Arial" fill="#18201b">
+    <text x="83" y="56" font-size="26" font-weight="700" font-family="Arial" fill="#18201b">PILON</text>
+    <text x="1240" y="52" text-anchor="end" font-size="11" fill="#637061" letter-spacing="1.5" font-family="Arial">HOME DEPOT / WORKED EXAMPLE</text>
+    <text x="38" y="119" font-size="42" font-weight="700" letter-spacing="-1.5" font-family="Arial" fill="#18201b">One search. A precise catalog change.</text>
+    <text x="38" y="153" font-size="17" fill="#637061" font-family="Arial">Keep the existing attribute. Add the missing value. Prove the distinction.</text>
+    <rect x="38" y="178" width="1202" height="63" rx="4" fill="#18201b" />
+    <text x="60" y="216" font-size="11" letter-spacing="1.5" fill="#d6f56a" font-family="Arial">CUSTOMER REQUEST</text>
+    <text x="233" y="219" font-size="27" fill="#f5f4ec" font-weight="700" font-family="Arial">“gnat killer”</text>
+    <text x="1218" y="216" text-anchor="end" font-size="14" fill="#c2cbc0" font-family="Arial">Which pest? What action?</text>
+    <rect x="38" y="264" width="535" height="367" rx="5" fill="white" stroke="#d9ddd2" />
+    <rect x="595" y="264" width="645" height="367" rx="5" fill="white" stroke="#d9ddd2" />
+    <text x="61" y="301" font-size="19" font-weight="700" font-family="Arial" fill="#18201b">01 / Before</text>
+    <text x="550" y="299" text-anchor="end" font-size="10" fill="#637061" font-family="Arial">OBSERVED CATALOG MODEL</text>
+    <text x="618" y="301" font-size="19" font-weight="700" font-family="Arial" fill="#18201b">02 / Proposed after</text>
+    <text x="1216" y="299" text-anchor="end" font-size="10" fill="#637061" font-family="Arial">NOT PUBLISHED</text>
+    <path d="M38 319h535M595 319h645" stroke="#d9ddd2" />
+    <text x="61" y="351" font-size="14" font-weight="700" font-family="Arial" fill="#18201b">Pest Type</text>
+    <text x="61" y="382" font-size="16" fill="#637061" font-family="Arial">Ants · Flies · Mosquitos · …</text>
+    <rect x="61" y="400" width="489" height="44" rx="3" fill="#f8f0de" />
+    <text x="75" y="427" font-size="14" fill="#79551c" font-family="Arial">“Gnats” is not among the observed values.</text>
+    <text x="61" y="481" font-size="14" font-weight="700" font-family="Arial" fill="#18201b">Pest control action</text>
+    <text x="61" y="512" font-size="19" font-family="Arial" fill="#18201b">No matching attribute found.</text>
+    <text x="61" y="552" font-size="14" fill="#637061" font-family="Arial">The target pest alone does not distinguish</text>
+    <text x="61" y="574" font-size="14" fill="#637061" font-family="Arial">killing, repelling and trapping.</text>
+    <text x="61" y="610" font-size="11" fill="#637061" font-family="Arial">5,388 attributes · 122,088 observed attribute/value pairs</text>
+    <text x="618" y="355" font-size="16" font-weight="700" font-family="Arial" fill="#18201b">Pest Type</text>
+    <rect x="734" y="333" width="100" height="33" rx="3" fill="#d6f56a" />
+    <text x="748" y="355" font-size="15" font-weight="700" font-family="Arial" fill="#18201b">+ Gnats</text>
+    <text x="1216" y="355" text-anchor="end" font-size="10" fill="#637061" font-family="Arial">EXTEND VALUE DOMAIN</text>
+    <text x="618" y="395" font-size="16" font-weight="700" font-family="Arial" fill="#18201b">+ Pest control action</text>
+    <text x="1216" y="395" text-anchor="end" font-size="10" fill="#637061" font-family="Arial">NEW ATTRIBUTE</text>
+    <rect x="618" y="410" width="51" height="30" rx="3" fill="#e4edce" />
+    <rect x="677" y="410" width="62" height="30" rx="3" fill="#edf0e7" />
+    <rect x="747" y="410" width="55" height="30" rx="3" fill="#edf0e7" />
+    <text x="633" y="430" font-size="14" font-family="Arial" fill="#18201b">kill</text>
+    <text x="691" y="430" font-size="14" font-family="Arial" fill="#18201b">repel</text>
+    <text x="761" y="430" font-size="14" font-family="Arial" fill="#18201b">trap</text>
+    <rect x="618" y="458" width="598" height="90" rx="3" fill="#18201b" />
+    <text x="632" y="485" font-size="14" fill="#f5f4ec" font-family="Arial">“exterminates flies, mosquitoes, gnats and other flying insects”</text>
+    <text x="632" y="527" font-size="11" fill="#b6c2b2" font-family="Arial">Product 143379 · exact source excerpt · supports “kill”</text>
+    <text x="618" y="581" font-size="20" font-weight="700" font-family="Arial" fill="#18201b">4 kill</text>
+    <text x="733" y="581" font-size="20" font-weight="700" font-family="Arial" fill="#18201b">6 repel</text>
+    <text x="864" y="581" font-size="20" font-weight="700" font-family="Arial" fill="#18201b">2 trap</text>
+    <text x="618" y="609" font-size="11" fill="#637061" font-family="Arial">Among 12 supported products in the reviewed shortlist.</text>
+    <path d="M38 657h1202" stroke="#d9ddd2" />
+    <text x="38" y="686" font-size="12" font-weight="700" font-family="Arial" fill="#18201b">BENCHMARK → EXTRACT → INDUCT</text>
+    <text x="1240" y="686" text-anchor="end" font-size="11" fill="#637061" font-family="Arial">Agent-reviewed example · not an independent accuracy result</text>
+  </g>
+</svg>
