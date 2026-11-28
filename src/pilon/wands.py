@@ -159,6 +159,10 @@ def import_wands(output_dir, *, revision=REVISION):
 
 def configure(parser):
     sub = parser.add_subparsers(dest='benchmark_command', required=True)
+    from .home_depot_commands import configure as configure_home_depot
+    configure_home_depot(sub)
+    from .model_commands import configure as configure_model
+    configure_model(sub)
     wands = sub.add_parser('wands', help='Import real queries and schema only; no product instances')
     wands.add_argument('--output-dir', type=Path, default=Path('runtime/wands'))
     wands.add_argument('--db', type=Path, default=Path('runtime/background.sqlite'))
@@ -172,6 +176,12 @@ def configure(parser):
 
 
 def execute(args):
+    if args.benchmark_command == 'run':
+        from .model_commands import execute as execute_model
+        return execute_model(args)
+    if args.benchmark_command == 'home-depot':
+        from .home_depot_commands import execute as execute_home_depot
+        return execute_home_depot(args)
     exported = {args.output_dir.resolve()/name for name in ('model.json','queries.jsonl','manifest.json','LICENSE-WANDS.txt')}
     if args.db.resolve() in exported:
         raise ValueError('Database and WANDS exports must have distinct paths')

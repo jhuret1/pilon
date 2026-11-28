@@ -1,0 +1,629 @@
+{
+  "schema_version": 1,
+  "decision_origin": "supplied_agent_review",
+  "independent_accuracy_evaluation": false,
+  "source_quotes_included": false,
+  "groups": [
+    {
+      "name": "pest_gnats",
+      "phrases": [
+        "gnats",
+        "gnat"
+      ],
+      "limit": 20,
+      "target_keys": [
+        "home_depot_badc375544d4b13940199b4568d67a89c3756514d525d873559c0652231e988b",
+        "pest_control_action"
+      ],
+      "candidate_keys": [
+        "review_7c3e76393adcc66d",
+        "review_23584a7c963f7803"
+      ],
+      "selected_record_ids": [
+        "home_depot_description_117834_f189b95534333fbb",
+        "home_depot_description_124042_821f5ab50ebab1f7",
+        "home_depot_description_153848_b35d008477b86728",
+        "home_depot_description_208329_9e91e3f009b888a0",
+        "home_depot_description_213006_609ecf515cabdc5a",
+        "home_depot_description_118495_2d0709e02922e8e0",
+        "home_depot_description_108278_c6f0733df716f3e4",
+        "home_depot_description_143379_df91dce29cf0a311",
+        "home_depot_description_212427_f21ea5c43c8a10a4",
+        "home_depot_description_143331_1463b1cddc7b668e",
+        "home_depot_description_209550_df39263a2b7d6219",
+        "home_depot_description_119426_a2ecc849c155c4d6",
+        "home_depot_description_178286_a2ecc849c155c4d6",
+        "home_depot_description_192108_73962d6e65970519",
+        "home_depot_description_172825_7edd0d5b8a80a8ea",
+        "home_depot_description_194687_7edd0d5b8a80a8ea",
+        "home_depot_description_203724_7edd0d5b8a80a8ea",
+        "home_depot_description_204556_7edd0d5b8a80a8ea",
+        "home_depot_description_118508_4c9c03752b422d85",
+        "home_depot_description_124472_ef344291dabf031d"
+      ]
+    },
+    {
+      "name": "pet_damage",
+      "phrases": [
+        "pet resistant",
+        "pet damage",
+        "pet screen",
+        "pet proof"
+      ],
+      "limit": 8,
+      "target_keys": [
+        "pet_damage_resistant"
+      ],
+      "candidate_keys": [
+        "review_dda390b0d159122f"
+      ],
+      "selected_record_ids": [
+        "home_depot_description_109367_b1bacc055b57e210",
+        "home_depot_description_148442_19ee3216dff2ae9c",
+        "home_depot_description_131885_ddb4be05a8aebbe7",
+        "home_depot_description_194379_ddb4be05a8aebbe7",
+        "home_depot_description_199252_ddb4be05a8aebbe7",
+        "home_depot_description_107282_6fc641ce33a696d9",
+        "home_depot_description_124626_6fc641ce33a696d9",
+        "home_depot_description_133178_6fc641ce33a696d9"
+      ]
+    },
+    {
+      "name": "sign_message",
+      "phrases": [
+        "open house"
+      ],
+      "limit": 8,
+      "target_keys": [
+        "sign_message"
+      ],
+      "candidate_keys": [
+        "review_294afa7a551ab493"
+      ],
+      "selected_record_ids": [
+        "home_depot_description_136817_45f16e3a57637333",
+        "home_depot_description_112849_c1f9706623ac9c21",
+        "home_depot_description_161345_92db832d00886566"
+      ]
+    },
+    {
+      "name": "door_plate_keyhole",
+      "phrases": [
+        "without keyhole",
+        "keyhole cover",
+        "keyhole escutcheon",
+        "keyhole plate",
+        "without a keyhole"
+      ],
+      "limit": 20,
+      "target_keys": [
+        "home_depot_door_plate_keyhole_presence"
+      ],
+      "candidate_keys": [
+        "review_1882efc4d3599cb1"
+      ],
+      "selected_record_ids": [
+        "home_depot_description_139426_498db415ebd6ab82",
+        "home_depot_description_157100_3e1aec7d56ef5026",
+        "home_depot_description_169781_e050b6298e77c6d6",
+        "home_depot_description_112532_b57e6ed1f67a4c83",
+        "home_depot_description_219695_1b8e909cdb5ca600"
+      ]
+    },
+    {
+      "name": "water_lily",
+      "phrases": [
+        "water lily",
+        "Nymphaea"
+      ],
+      "limit": 20,
+      "target_keys": [
+        "home_depot_cc3795b8f62727c589049a2b7fd2d6ed12286c5a5248012b7ecf7d7720524db8"
+      ],
+      "candidate_keys": [
+        "review_f07c54446a06288b"
+      ],
+      "selected_record_ids": [
+        "home_depot_description_158654_e2116b5cc1d0d202",
+        "home_depot_description_212708_7dde05f1d1c80ba7",
+        "home_depot_description_117949_9153944728687a3f"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "home_depot_description_117834_f189b95534333fbb",
+      "product_id": "117834",
+      "content_sha256": "f189b95534333fbbb265c8844beced009a71bf8066862dd6c99e9e1a5330c106",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 0,
+          "end": 376,
+          "quote_sha256": "4780391e8beeb813f3f726bcbe4668c702339d199a5c5ae2655dad87cb92f0c0"
+        },
+        {
+          "label": "Pest control action",
+          "value": "kill",
+          "start": 0,
+          "end": 376,
+          "quote_sha256": "4780391e8beeb813f3f726bcbe4668c702339d199a5c5ae2655dad87cb92f0c0"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_124042_821f5ab50ebab1f7",
+      "product_id": "124042",
+      "content_sha256": "821f5ab50ebab1f766786ec2a4c0062f059be7c5da244383efb714b2165b264f",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 0,
+          "end": 317,
+          "quote_sha256": "8fc35ca78cd87b11cad6d07c23b40c59b836026900b586f45f32888cc537678a"
+        },
+        {
+          "label": "Pest control action",
+          "value": "kill",
+          "start": 0,
+          "end": 317,
+          "quote_sha256": "8fc35ca78cd87b11cad6d07c23b40c59b836026900b586f45f32888cc537678a"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_153848_b35d008477b86728",
+      "product_id": "153848",
+      "content_sha256": "b35d008477b86728b94a770bccec44d4c8ae2d70107962c041907845faff1cb9",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 336,
+          "end": 401,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 336,
+          "end": 401,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_208329_9e91e3f009b888a0",
+      "product_id": "208329",
+      "content_sha256": "9e91e3f009b888a026106e5c1ef55ec8e92a2ce78ffaabb02528d1b7e7ad11ec",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 0,
+          "end": 99,
+          "quote_sha256": "e1ff49ff69b609838f4b9322df2af19a33fec0de5eab522f4c4c0cff0f9e0774"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 0,
+          "end": 99,
+          "quote_sha256": "e1ff49ff69b609838f4b9322df2af19a33fec0de5eab522f4c4c0cff0f9e0774"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_213006_609ecf515cabdc5a",
+      "product_id": "213006",
+      "content_sha256": "609ecf515cabdc5a0ec05aa22fe7c52191098e782a87779f7233ae5a03238d4c",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 340,
+          "end": 405,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 340,
+          "end": 405,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_118495_2d0709e02922e8e0",
+      "product_id": "118495",
+      "content_sha256": "2d0709e02922e8e0c0590d0981a13b69439763c52f9b87ae1092a1481bdb5f98",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 68,
+          "end": 147,
+          "quote_sha256": "0edfd50d39e93b75b2d2a9e1c67a227c1199ba5da88d929a36607419ae1feefb"
+        },
+        {
+          "label": "Pest control action",
+          "value": "kill",
+          "start": 68,
+          "end": 147,
+          "quote_sha256": "0edfd50d39e93b75b2d2a9e1c67a227c1199ba5da88d929a36607419ae1feefb"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_108278_c6f0733df716f3e4",
+      "product_id": "108278",
+      "content_sha256": "c6f0733df716f3e47f1bd6750a5f3b8ee24d4b112623f059afa00c1d8966e2f1",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 173,
+          "end": 276,
+          "quote_sha256": "f5725acd96e6ba93230f16859463079e9e6a5dbc1f5bc07739a001a3b0c1ff85"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 173,
+          "end": 276,
+          "quote_sha256": "f5725acd96e6ba93230f16859463079e9e6a5dbc1f5bc07739a001a3b0c1ff85"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_143379_df91dce29cf0a311",
+      "product_id": "143379",
+      "content_sha256": "df91dce29cf0a3118e331584fb22bdbc3252243f2be193bdc99188463680d0fd",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 0,
+          "end": 138,
+          "quote_sha256": "65f72022af77224758fc4e9f778cfcdb7d84d5da80700c2c8ceca7c806ff5baa"
+        },
+        {
+          "label": "Pest control action",
+          "value": "kill",
+          "start": 0,
+          "end": 138,
+          "quote_sha256": "65f72022af77224758fc4e9f778cfcdb7d84d5da80700c2c8ceca7c806ff5baa"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_212427_f21ea5c43c8a10a4",
+      "product_id": "212427",
+      "content_sha256": "f21ea5c43c8a10a4f30f79f41e66062b2109e2c0ffdd53c5e1855e0fee77b69f",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 0,
+          "end": 304,
+          "quote_sha256": "6e77d67cc96493d64420dc506ada970a83e284f7be78355e9d2c7a2dd12b3e4e"
+        },
+        {
+          "label": "Pest control action",
+          "value": "trap",
+          "start": 0,
+          "end": 304,
+          "quote_sha256": "6e77d67cc96493d64420dc506ada970a83e284f7be78355e9d2c7a2dd12b3e4e"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_143331_1463b1cddc7b668e",
+      "product_id": "143331",
+      "content_sha256": "1463b1cddc7b668e8b6c4d73cef6fa7402798d562537258d77e065f930fe26f9",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 153,
+          "end": 203,
+          "quote_sha256": "9a203e97e8427497679bd726bc9d9012c8090d0e560666919102eeb6d1103672"
+        },
+        {
+          "label": "Pest control action",
+          "value": "trap",
+          "start": 153,
+          "end": 203,
+          "quote_sha256": "9a203e97e8427497679bd726bc9d9012c8090d0e560666919102eeb6d1103672"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_209550_df39263a2b7d6219",
+      "product_id": "209550",
+      "content_sha256": "df39263a2b7d6219825be7e979acc81758aa23438a50b3e23f1291db570d7b84",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 225,
+          "end": 290,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 225,
+          "end": 290,
+          "quote_sha256": "7934fa1c3e7910d29d43e51fd3e4f0557bfee8482074022be2f152e9893da51d"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_119426_a2ecc849c155c4d6",
+      "product_id": "119426",
+      "content_sha256": "a2ecc849c155c4d62735c7e364ceab3c4b877ddddecc1b3cc4114f91da8d4d9e",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_178286_a2ecc849c155c4d6",
+      "product_id": "178286",
+      "content_sha256": "a2ecc849c155c4d62735c7e364ceab3c4b877ddddecc1b3cc4114f91da8d4d9e",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_192108_73962d6e65970519",
+      "product_id": "192108",
+      "content_sha256": "73962d6e65970519961c19947d9b36dc226734c07e80aabcb40d62b9093e4ebd",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_172825_7edd0d5b8a80a8ea",
+      "product_id": "172825",
+      "content_sha256": "7edd0d5b8a80a8ea9dc535d5983d66f2a96e5e8bac3a5be6ab63a8eb34a63d33",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_194687_7edd0d5b8a80a8ea",
+      "product_id": "194687",
+      "content_sha256": "7edd0d5b8a80a8ea9dc535d5983d66f2a96e5e8bac3a5be6ab63a8eb34a63d33",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_203724_7edd0d5b8a80a8ea",
+      "product_id": "203724",
+      "content_sha256": "7edd0d5b8a80a8ea9dc535d5983d66f2a96e5e8bac3a5be6ab63a8eb34a63d33",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_204556_7edd0d5b8a80a8ea",
+      "product_id": "204556",
+      "content_sha256": "7edd0d5b8a80a8ea9dc535d5983d66f2a96e5e8bac3a5be6ab63a8eb34a63d33",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_118508_4c9c03752b422d85",
+      "product_id": "118508",
+      "content_sha256": "4c9c03752b422d85efd9d27f9800cff9b070cb1d437c247a0ffab0720a3a816e",
+      "extractions": [
+        {
+          "label": "Pest Type",
+          "value": "Gnats",
+          "start": 356,
+          "end": 413,
+          "quote_sha256": "8ae84196c6767be641d6ec4ef86e68935757051f842736005d14108f577ef909"
+        },
+        {
+          "label": "Pest control action",
+          "value": "repel",
+          "start": 356,
+          "end": 413,
+          "quote_sha256": "8ae84196c6767be641d6ec4ef86e68935757051f842736005d14108f577ef909"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_124472_ef344291dabf031d",
+      "product_id": "124472",
+      "content_sha256": "ef344291dabf031d422afbc0510b64a7f3d288f8f8e038d9428a72bf670eb356",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_139426_498db415ebd6ab82",
+      "product_id": "139426",
+      "content_sha256": "498db415ebd6ab82bae02998269e052a66a50807e0a4720c2426e745689e17b3",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_157100_3e1aec7d56ef5026",
+      "product_id": "157100",
+      "content_sha256": "3e1aec7d56ef5026881262bea1c28a037261d5ae05c6c1819b6f2a5072d5666e",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_169781_e050b6298e77c6d6",
+      "product_id": "169781",
+      "content_sha256": "e050b6298e77c6d606b07dac56f2fae7c5ea6f873177d89c26797b316e3b12a1",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_112532_b57e6ed1f67a4c83",
+      "product_id": "112532",
+      "content_sha256": "b57e6ed1f67a4c83c32c13b1d6308300e490193886331faf16d0f969648ce41d",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_219695_1b8e909cdb5ca600",
+      "product_id": "219695",
+      "content_sha256": "1b8e909cdb5ca6002a9e5b9dc11f612e596e434043aa13777c46b080d686aa8d",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_158654_e2116b5cc1d0d202",
+      "product_id": "158654",
+      "content_sha256": "e2116b5cc1d0d202eae0eb9a0e84166fe9af5ef23312817c5526f4b6794bbbd3",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_212708_7dde05f1d1c80ba7",
+      "product_id": "212708",
+      "content_sha256": "7dde05f1d1c80ba77ab7a8499df815e9e55e65a344c106d58be5f05bfff058c7",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_117949_9153944728687a3f",
+      "product_id": "117949",
+      "content_sha256": "9153944728687a3fe2e5602d30f3bbcb522a49b94c0eb005578348be1b26885c",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_109367_b1bacc055b57e210",
+      "product_id": "109367",
+      "content_sha256": "b1bacc055b57e210390e85b19f29a66818d310e4f088ede832a5aa0c365f49b3",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 17,
+          "end": 47,
+          "quote_sha256": "51aa505800d1fcf5d19910f418679bbec0f24cc943e580dca61842a7348376ac"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_148442_19ee3216dff2ae9c",
+      "product_id": "148442",
+      "content_sha256": "19ee3216dff2ae9c9748a36cecee067530543048232003769b56c6949f1801ae",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 147,
+          "end": 186,
+          "quote_sha256": "b57f6a533c81719f39de82fb5cd7816f1c9a6f3df443daa08012b06b9625524c"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_131885_ddb4be05a8aebbe7",
+      "product_id": "131885",
+      "content_sha256": "ddb4be05a8aebbe7eeb5d66cc6b6dd40c88b2dea987382704cdef60fa18449e3",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 0,
+          "end": 65,
+          "quote_sha256": "07b5295fba211affec21cfb5e01a36564c320c8d041e73dc7efe63e4aad27e09"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_194379_ddb4be05a8aebbe7",
+      "product_id": "194379",
+      "content_sha256": "ddb4be05a8aebbe7eeb5d66cc6b6dd40c88b2dea987382704cdef60fa18449e3",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 0,
+          "end": 65,
+          "quote_sha256": "07b5295fba211affec21cfb5e01a36564c320c8d041e73dc7efe63e4aad27e09"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_199252_ddb4be05a8aebbe7",
+      "product_id": "199252",
+      "content_sha256": "ddb4be05a8aebbe7eeb5d66cc6b6dd40c88b2dea987382704cdef60fa18449e3",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 0,
+          "end": 65,
+          "quote_sha256": "07b5295fba211affec21cfb5e01a36564c320c8d041e73dc7efe63e4aad27e09"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_107282_6fc641ce33a696d9",
+      "product_id": "107282",
+      "content_sha256": "6fc641ce33a696d96bf89521f551eac22d5b3dbda2e508226f35f4b05af30533",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 339,
+          "end": 361,
+          "quote_sha256": "44025de04bf2f4e69e32f54447f6f05f6d540cbd6de6b000c24c67504f2998dd"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_124626_6fc641ce33a696d9",
+      "product_id": "124626",
+      "content_sha256": "6fc641ce33a696d96bf89521f551eac22d5b3dbda2e508226f35f4b05af30533",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 339,
+          "end": 361,
+          "quote_sha256": "44025de04bf2f4e69e32f54447f6f05f6d540cbd6de6b000c24c67504f2998dd"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_133178_6fc641ce33a696d9",
+      "product_id": "133178",
+      "content_sha256": "6fc641ce33a696d96bf89521f551eac22d5b3dbda2e508226f35f4b05af30533",
+      "extractions": [
+        {
+          "label": "Pet damage resistance",
+          "value": "Yes",
+          "start": 339,
+          "end": 361,
+          "quote_sha256": "44025de04bf2f4e69e32f54447f6f05f6d540cbd6de6b000c24c67504f2998dd"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_136817_45f16e3a57637333",
+      "product_id": "136817",
+      "content_sha256": "45f16e3a57637333f865cc1646f673f8daa12f4fe68b17d78ae0a07066801558",
+      "extractions": [
+        {
+          "label": "Sign message",
+          "value": "Open House",
+          "start": 45,
+          "end": 68,
+          "quote_sha256": "6becbd2de689c1871962ce43fd7a1a788e8a4cf49438e9c54e99df43fce3226c"
+        }
+      ]
+    },
+    {
+      "id": "home_depot_description_112849_c1f9706623ac9c21",
+      "product_id": "112849",
+      "content_sha256": "c1f9706623ac9c21abfbb38baa1b4c59536aa342644e174a7dd48200f0595ae8",
+      "extractions": []
+    },
+    {
+      "id": "home_depot_description_161345_92db832d00886566",
+      "product_id": "161345",
+      "content_sha256": "92db832d008865669e6b1fa6121480736d459603e91efe3d3e671d9df976ee5b",
+      "extractions": [
+        {
+          "label": "Sign message",
+          "value": "Open House",
+          "start": 46,
+          "end": 69,
+          "quote_sha256": "6becbd2de689c1871962ce43fd7a1a788e8a4cf49438e9c54e99df43fce3226c"
+        }
+      ]
+    }
+  ]
+}

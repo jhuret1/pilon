@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "provider": {
+    "kind": "openai_compatible",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini",
+    "api_key_env": "OPENAI_API_KEY",
+    "response_format": "json_object",
+    "temperature": 0,
+    "max_output_tokens": 3000,
+    "timeout_seconds": 60
+  },
+  "limits": {
+    "max_requests": 25,
+    "max_input_chars": 120000,
+    "max_estimated_cost_usd": 1,
+    "input_price_per_million": 0.10,
+    "output_price_per_million": 0.40
+  },
+  "benchmark": {
+    "max_records": 20,
+    "max_model_chars": 60000
+  }
+}

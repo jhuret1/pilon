@@ -7,6 +7,7 @@ Unrecognized requests remain in an unresolved queue instead of disappearing.
 from collections import defaultdict
 from copy import deepcopy
 from hashlib import sha256
+from functools import lru_cache
 import re
 
 from ..facets.engine import _key, _day, _terms, labeled_specs
@@ -18,13 +19,20 @@ def _identifier(label):
     return _key(label).replace(" ", "_")
 
 
-def _span(text, phrase):
-    # Unicode case insensitive matching keeps offsets in the original string.
+@lru_cache(maxsize=32768)
+def _phrase_pattern(phrase):
+    # Reuse the same vocabulary across queries without caching customer texts.
     words = re.findall(r"[^\W_]+", phrase, re.UNICODE)
     if not words:
         return None
     expression = r"(?<!\w)" + r"[\W_]+".join(re.escape(w) for w in words) + r"(?!\w)"
-    return re.search(expression, text, re.IGNORECASE)
+    return re.compile(expression, re.IGNORECASE)
+
+
+def _span(text, phrase):
+    # Unicode case insensitive matching keeps offsets in the original string.
+    pattern = _phrase_pattern(phrase)
+    return pattern.search(text) if pattern is not None else None
 
 
 def _proof(row, start, end):
@@ -141,7 +149,7 @@ def _intents(row, vocabulary, intent_extractor):
 
 def _unresolved(row):
     key = "unresolved_" + sha256(_key(row["text"]).encode()).hexdigest()[:12]
-    return dict(key=key, label="Intention à qualifier", definition="", aliases=[],
+    return dict(key=key, label="Intent to clarify", definition="", aliases=[],
                evidence=_proof(row, 0, len(row["text"])), detection="unresolved",
                identity_status="unresolved")
 

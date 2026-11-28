@@ -71,3 +71,17 @@ def test_display_translation_does_not_change_the_raw_report_or_job(tmp_path):
     assert data['model']==model
     assert get(localized,'/api/jobs/'+jid)['body']==before
     assert q.get(jid)==original
+
+
+def test_extract_and_induct_are_separate_read_only_workspaces(tmp_path):
+    q=Queue(tmp_path/'q.sqlite')
+    model,records=inputs()
+    jid=q.enqueue(model,records,synthetic=True)
+    run_once(q,job_id=jid)
+    before=q.get(jid)
+    app=create_app(q)
+    for stage in ('extract','induct'):
+        response=get(app,'/'+stage+'/'+jid)
+        assert response['status']=='200 OK'
+        assert b'<html' in response['body'] and stage.encode() in response['body'].lower()
+    assert q.get(jid)==before

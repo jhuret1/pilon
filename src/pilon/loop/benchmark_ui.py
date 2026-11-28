@@ -75,15 +75,19 @@ def build_view(report, *, records=None, benchmark=None, display_translations=Non
                     if _mapping(bp.get('analysis')).get('method') == 'agent_semantic_review'
                     and _mapping(bp.get('analysis')).get('status') == 'reviewed' else None)
     view = dict(id=report.get('id'), status=report.get('status', 'empty'), ready=ready,
-                product_view=product_view,
+                product_view=product_view, related_jobs=deepcopy(report.get('related_jobs', [])),
                 synthetic=bool(report.get('synthetic')), model=model, attributes=facets, candidates=candidates,
                 demands=demands, already_represented=represented, channels=channels, jobs=deepcopy(report.get('jobs', [])),
                 error=report.get('error'), complete_inputs=complete_inputs,
+                inference=deepcopy(_mapping(_mapping(report.get('metrics')).get('inference'))),
                 metrics=metrics, analysis=deepcopy(_mapping(bp.get('analysis', report.get('analysis')))),
                 summary=dict(demand_events=sum(r.get('count', 1) for r in demands),
                              demand_records=len(demands), opportunity_count=len(candidates),
                              schema_gaps=gaps['schema_gap'], inventory_products=inventory,
                              gaps=dict(gaps), attributes=len(facets)))
+    if 'audit' in bp:
+        # Preserve the supplied review, including unresolved disagreements, verbatim.
+        view['audit'] = deepcopy(bp['audit'])
     return apply_display_translations(view, display_translations)
 
 

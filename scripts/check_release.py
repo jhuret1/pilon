@@ -12,6 +12,12 @@ for name in filter(None,tracked):
     path = root/name
     if name.startswith(('runtime/','data/','.venv/')) or path.suffix in ('.sqlite','.parquet','.npz'):
         violations.append(name+': forbidden artifact')
+    if path.suffix.lower() in ('.png', '.jpg', '.jpeg'):
+        magic = b'\x89PNG\r\n\x1a\n' if path.suffix.lower() == '.png' else b'\xff\xd8\xff'
+        if not name.startswith('docs/assets/') or not path.read_bytes().startswith(magic):
+            violations.append(name+': unexpected binary asset')
+        # Screenshots are reviewed visually; UTF-8 secret scanning is inapplicable.
+        continue
     text = path.read_text(encoding='utf-8')
     if any(re.search(pattern,text) for pattern in patterns):
         violations.append(name+': possible secret or private absolute path')

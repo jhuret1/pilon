@@ -1,5 +1,6 @@
 include LICENSE README.md CONTRIBUTING.md SECURITY.md
-recursive-include docs *.md *.html
+recursive-include docs *.md *.html *.png *.jpg *.svg *.json
 recursive-include scripts *.py
+recursive-include configs *.json *.md
 recursive-include src/pilon/facets/example *.json *.jsonl
 include start-local.cmd

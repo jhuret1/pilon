@@ -40,6 +40,11 @@ def configure(parser):
     work.add_argument('--job')
     work.add_argument('--lease-seconds',type=float,default=60)
     work.add_argument('--poll-seconds',type=float,default=2)
+    enrich=sub.add_parser('enrich',help='Send selected Benchmark proposals and product evidence to Extract/Ingest')
+    enrich.add_argument('job_id')
+    enrich.add_argument('--candidate',action='append',required=True,help='Exact Benchmark candidate key; repeat to select several')
+    enrich.add_argument('--signals',action='append',required=True,help='Product-only source exports, optionally with grounded annotations')
+    enrich.add_argument('--routing',type=Path,help='Optional source-shortlisting manifest; not a recall measurement')
     view=sub.add_parser('report',help='Export a checkpointed job snapshot')
     view.add_argument('job_id');view.add_argument('--html',type=Path);view.add_argument('--output',type=Path)
     serve=sub.add_parser('serve',help='Read-only cockpit; does not start jobs or publish models')
@@ -57,7 +62,7 @@ def configure(parser):
     rollback.add_argument('--actor',required=True)
     rollback.add_argument('--target',type=int,required=True)
     rollback.add_argument('--expected-current',type=int,required=True)
-    for p in (demo,enqueue,watch,revisit,work,view,serve,retry,publish,rollback):
+    for p in (demo,enqueue,watch,revisit,work,view,serve,retry,publish,rollback,enrich):
         p.add_argument('--db',type=Path,default=Path('runtime/background.sqlite'))
 
 
@@ -69,6 +74,15 @@ def execute(args):
     _validate_paths(args)
     queue=Queue(args.db)
     command=args.loop_command
+    if command=='enrich':
+        from .enrichment import prepare_enrichment
+        sources=list(chain.from_iterable(read_signals(path) for path in args.signals))
+        routing=json.loads(args.routing.read_text(encoding='utf-8')) if args.routing else None
+        jid=prepare_enrichment(queue,args.job_id,args.candidate,sources,routing=routing)
+        _emit(dict(job_id=jid,status=queue.get(jid)['status'],parent_job=args.job_id,
+                   extract_url='http://127.0.0.1:8473/extract/'+jid,
+                   induct_url='http://127.0.0.1:8473/induct/'+jid))
+        return
     if command in ('enqueue','watch'):
         if args.signals.count('-')>1 or args.top_k<1:
             raise ValueError('Use at most one stdin feed and positive top-k')

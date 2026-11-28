@@ -311,7 +311,7 @@ def test_real_offline_demo_new_source_changes_proposal_but_preserves_unknown_nee
         projection = build_projection(model, candidates, extractions)
         markup = render_loop(dict(model=model, candidates=candidates, extractions=extractions,
                                   projection=projection, synthetic=True))
-        assert "Intention à qualifier" in markup
+        assert "Intent to clarify" in markup
         assert "Adaptateur explicite requis pour cette source" in markup
         assert "Produits non analysés ou partiellement analysés" in markup
         pages.append(Page(markup))
