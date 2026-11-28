@@ -8,9 +8,13 @@ from .facets import commands
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Discover catalog filters in multichannel feedback.")
+    parser = argparse.ArgumentParser(description="Find customer needs your catalog cannot yet describe.")
     parser.add_argument("--version", action="version", version=__version__)
     sub = parser.add_subparsers(dest="command", required=True)
+    start = sub.add_parser('start', help='Open the local getting-started workspace')
+    start.add_argument('--demo', action='store_true', help='Create a synthetic example without an API key')
+    start.add_argument('--port', type=int, default=8473)
+    start.add_argument('--db', type=Path, default=Path('runtime/background.sqlite'))
     demo = sub.add_parser("demo", help="Explore the offline running-shoe example")
     demo.add_argument("example", nargs="?", choices=["ecommerce-facets"])
     commands.arguments(demo)
@@ -28,10 +32,35 @@ def main(argv=None):
     serve.add_argument("--signals", action="append", help="CSV or JSONL feed; repeat for multiple files")
     serve.add_argument("--port", type=int, default=8472)
     commands.stage_arguments(serve)
+    loop = sub.add_parser("loop", help="Benchmark → Extract → Induct background jobs")
+    from .loop.commands import configure, execute as execute_loop
+    configure(loop)
+    bench = sub.add_parser('benchmark', help='Compare customer requests to a data model')
+    from .wands import configure as configure_benchmark, execute as execute_benchmark
+    configure_benchmark(bench)
     argv = sys.argv[1:] if argv is None else argv
     args = parser.parse_args(argv or ["demo"])
     try:
-        if args.command == "serve":
+        if args.command == 'start':
+            if not 0 <= args.port <= 65535:
+                parser.error('--port must be between 0 and 65535')
+            from .loop.store import Queue
+            from .loop.app import serve
+            queue = Queue(args.db)
+            if args.demo:
+                from .loop.demo import inputs
+                from .loop.worker import run_once
+                model, records = inputs()
+                jid = queue.enqueue(model, records, synthetic=True)
+                run_once(queue, job_id=jid)
+            print(f'Get started: http://127.0.0.1:{args.port}/start' if args.port else
+                  'Get started: open /start at the local server address below.', flush=True)
+            serve(queue, args.port)
+        elif args.command == "benchmark":
+            execute_benchmark(args)
+        elif args.command == "loop":
+            execute_loop(args)
+        elif args.command == "serve":
             from .app import serve_report
             if (args.model is None) != (args.signals is None):
                 parser.error("--model and --signals must be supplied together")

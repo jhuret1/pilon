@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pilon-discovery"
-version = "0.2.0a1"
-description = "Discover missing catalog filters from customer signals and product evidence"
+version = "0.3.0a1"
+description = "Turn unmet customer demand into grounded, versioned product knowledge in the background"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -27,7 +27,7 @@ pilon = "pilon.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-pilon = ["facets/example/*.json", "facets/example/*.jsonl"]
+pilon = ["facets/example/*.json", "facets/example/*.jsonl", "loop/ui/*.html", "loop/ui/*.css", "loop/ui/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

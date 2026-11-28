@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "provider": {
+    "kind": "ollama",
+    "base_url": "http://127.0.0.1:11434/v1",
+    "model": "qwen3:8b",
+    "response_format": "json_object",
+    "temperature": 0,
+    "max_output_tokens": 3000,
+    "timeout_seconds": 60
+  },
+  "limits": {
+    "max_requests": 25,
+    "max_input_chars": 120000,
+    "max_estimated_cost_usd": 0,
+    "input_price_per_million": 0,
+    "output_price_per_million": 0
+  },
+  "benchmark": {
+    "max_records": 20,
+    "max_model_chars": 60000
+  }
+}

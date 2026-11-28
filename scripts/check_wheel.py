@@ -1,12 +1,14 @@
 """Check that the wheel can supply every input needed for the offline demo."""
 from pathlib import Path
 from zipfile import ZipFile
+import sys
 
-wheel, = Path("dist").glob("pilon_discovery-*.whl")
+wheel, = Path(sys.argv[1] if len(sys.argv)>1 else 'dist').glob("pilon_discovery-*.whl")
 with ZipFile(wheel) as archive:
     names = set(archive.namelist())
     required = {"pilon/facets/example/model.json", "pilon/facets/example/signals.jsonl",
-                "pilon/facets/report.py", "pilon/app.py", "pilon/cli.py"}
+                "pilon/facets/report.py", "pilon/app.py", "pilon/cli.py",
+                "pilon/loop/ui/benchmark.html", "pilon/loop/ui/benchmark.css", "pilon/loop/ui/benchmark.js"}
     assert required <= names, f"Missing package files: {required - names}"
     source = Path("src")
     modules = {p.relative_to(source).as_posix() for p in (source / "pilon").rglob("*.py")}

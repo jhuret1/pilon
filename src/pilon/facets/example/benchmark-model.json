@@ -1,0 +1,15 @@
+{
+  "category": "running-shoes",
+  "version": "synthetic-shoes-v1",
+  "synthetic": true,
+  "assessment_scope": "schema_only",
+  "observation_period": "unknown",
+  "demand_unit": "sampled_queries",
+  "categories": [],
+  "facets": [
+    {"key": "width", "label": "Width", "definition": "Overall shoe width, not space around the toes.", "values": ["standard", "wide"], "values_status": "observed_not_exhaustive"},
+    {"key": "terrain", "label": "Terrain", "definition": "Intended running surface.", "values": ["road", "trail"], "values_status": "observed_not_exhaustive"},
+    {"key": "closure", "label": "Closure", "definition": "How the shoe is fastened.", "values": ["laces", "slip-on"], "values_status": "observed_not_exhaustive"}
+  ],
+  "assignments": []
+}

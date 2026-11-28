@@ -1,0 +1,50 @@
+{
+  "dataset": "Home Depot Product Search Relevance",
+  "sample_unit": "distinct_query",
+  "sample_size": 1000,
+  "seed": "pilon-home-depot-v1",
+  "structured_attributes": 5388,
+  "observed_attribute_values": 122088,
+  "excluded_bullet_rows": 589915,
+  "benchmark": {
+    "criteria": 2034,
+    "assessments": {
+      "attribute_gap": 9,
+      "represented": 1420,
+      "unresolved": 562,
+      "value_gap": 43
+    },
+    "requests_with_any_covered_criterion": 821,
+    "requests_fully_covered": 434,
+    "audit_sample": 102,
+    "audit_findings": {
+      "needs_review": 9,
+      "corrected": 21
+    },
+    "baseline_elapsed_seconds": 24.54823079984635,
+    "review_replay_seconds": 0.6306348000653088
+  },
+  "extraction": {
+    "indexed_descriptions": 124428,
+    "selected_descriptions": 39,
+    "supported_products": 22,
+    "unsupported_selected_descriptions": 17,
+    "assignments": 34,
+    "projected_new_attributes": 3,
+    "extended_attributes": 1,
+    "fully_blocked_proposals": 2,
+    "blocked_entries": 27,
+    "replay_seconds": 2.0803753002546728,
+    "selection_recall": "not_measured"
+  },
+  "local_jobs": {
+    "benchmark": "job_32a1cae15065657b9838",
+    "enrichment": "job_4c1860e5cabf743edcf7"
+  },
+  "decision_origin": "agent_reviewed_not_independent_gold",
+  "api_calls": 0,
+  "agent_session_usage": "not_metered_by_pilon",
+  "publication_status": "not_published",
+  "model_hash": "9467b0a94d018c94d8760d36fb898d47d6ea8872a69a257ded6b875580ba31dd",
+  "projection_id": "0bc4fac70519b00b9b1e08692c5abb293a5834ec3b6ee9db0f43540da054cde5"
+}
